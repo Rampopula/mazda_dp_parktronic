@@ -150,7 +150,16 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 }
 
 /* USER CODE BEGIN 1 */
+extern UART_HandleTypeDef huart3;
 
+/**
+ * @brief Retarget printf() write to UART.
+ */
+int _write(int fd, char *buf, int len)
+{
+  HAL_UART_Transmit(&huart3, (uint8_t *)buf, len, HAL_MAX_DELAY);
+  return len;
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
