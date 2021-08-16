@@ -16,4 +16,9 @@
 #define MDP_APP_DEBUG 0
 #endif
 
+#define MDP_APP_VERSION "v0.1"
+#define MDP_BOARD_REVISION "rev.01"
+#define MDP_BOARD_CHIP_NAME "STM32F103C8T6"
+#define MDP_CLOCK_FREQ_MHZ 48
+
 #endif /* __MDP_BOARDINFO_H__ */
