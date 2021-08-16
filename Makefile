@@ -99,7 +99,8 @@ C_INCLUDES =  \
 -Iautogen/Drivers/STM32F1xx_HAL_Driver/Inc \
 -Iautogen/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -Iautogen/Drivers/CMSIS/Device/ST/STM32F1xx/Include \
--Iautogen/Drivers/CMSIS/Include
+-Iautogen/Drivers/CMSIS/Include \
+-Iboardinfo/
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -107,7 +108,7 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+CFLAGS += -g -gdwarf-2 -DMDP_APP_DEBUG=1
 endif
 
 # Generate dependency information
