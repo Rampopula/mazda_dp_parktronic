@@ -39,7 +39,8 @@ autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
-autogen/Core/Src/system_stm32f1xx.c
+autogen/Core/Src/system_stm32f1xx.c \
+app/mdp.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -100,7 +101,8 @@ C_INCLUDES =  \
 -Iautogen/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -Iautogen/Drivers/CMSIS/Device/ST/STM32F1xx/Include \
 -Iautogen/Drivers/CMSIS/Include \
--Iboardinfo/
+-Iboardinfo/ \
+-Iapp/
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
