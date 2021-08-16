@@ -29,6 +29,7 @@ autogen/Core/Src/stm32f1xx_hal_msp.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
+autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
