@@ -11,6 +11,11 @@ TARGET = mazda_dp_parktronic
 DEBUG = 1
 # optimization
 OPT = -Og
+# log verbosity
+#	error = 0
+#	info = 1
+#	debug = 2
+LOG_LEVEL = 2
 
 #######################################
 # paths
@@ -109,7 +114,7 @@ C_INCLUDES =  \
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -DLOG_LEVEL=$(LOG_LEVEL)
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2 -DMDP_APP_DEBUG=1
