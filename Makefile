@@ -102,6 +102,7 @@ C_INCLUDES =  \
 -Iautogen/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -Iautogen/Drivers/CMSIS/Device/ST/STM32F1xx/Include \
 -Iautogen/Drivers/CMSIS/Include \
+-Icommon/ \
 -Iboardinfo/ \
 -Iapp/
 
