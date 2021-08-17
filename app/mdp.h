@@ -2,6 +2,7 @@
 #define __MAZDA_DP_PARKTRONIC_H__
 
 #include "boardinfo.h"
+#include "log.h"
 
 /**
  * @brief Initialize Mazda Display Parktronic application.
