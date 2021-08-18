@@ -109,7 +109,8 @@ C_INCLUDES =  \
 -Iautogen/Drivers/CMSIS/Include \
 -Icommon/ \
 -Iboardinfo/ \
--Iapp/
+-Iapp/ \
+-Iapp/misc/
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
