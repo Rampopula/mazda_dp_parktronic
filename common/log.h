@@ -31,7 +31,7 @@
 #define __log(module, level, fmt, args...) \
 	do { \
 		if (level <= LOG_LEVEL) { \
-			struct mdp_timestamp ts = MDP_TIMESTAMP(); \
+			struct mdp_timestamp ts = MDP_TIMESTAMP; \
 			printf("[%lu.%03lu] " module ": " fmt, \
 				ts.sec, ts.msec, ##args); \
 		} \
@@ -40,7 +40,7 @@
 #define __log_debug(module, level, fmt, args...) \
 	do { \
 		if (level <= LOG_LEVEL) { \
-			struct mdp_timestamp ts = MDP_TIMESTAMP(); \
+			struct mdp_timestamp ts = MDP_TIMESTAMP; \
 			printf("[%lu.%03lu] " module "(%s:%d): " fmt, ts.sec, \
 				ts.msec, __FUNCTION__, __LINE__, ##args); \
 		} \

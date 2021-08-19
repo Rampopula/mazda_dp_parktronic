@@ -15,17 +15,18 @@
 struct mdp_timestamp {
 	uint32_t sec;
 	uint32_t msec;
+	uint32_t ticks;
 };
 
-#define __MDP_SEC_SHIFT 10 /* Will consider 1 sec is 1024 msec */
-#define __MDP_MSEC_IN_SEC 1000
+#define __MDP_SEC_SHIFT 	10	/* Will consider 1 sec is 1024 msec */
+#define __MDP_MSEC_IN_SEC	1000
 
-#define MDP_TIMESTAMP() \
+#define MDP_TIMESTAMP \
 	({ \
 		struct mdp_timestamp __ts; \
-		uint32_t __ticks = HAL_GetTick(); \
-		__ts.sec = __ticks >> __MDP_SEC_SHIFT; \
-		__ts.msec = __ticks - (__ts.sec << __MDP_SEC_SHIFT); \
+		__ts.ticks = HAL_GetTick(); \
+		__ts.sec = __ts.ticks >> __MDP_SEC_SHIFT; \
+		__ts.msec = __ts.ticks - (__ts.sec << __MDP_SEC_SHIFT); \
 		if (__ts.msec >= __MDP_MSEC_IN_SEC) { \
 			__ts.msec -= __MDP_MSEC_IN_SEC; \
 			__ts.sec++; \
