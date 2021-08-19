@@ -17,6 +17,7 @@ static void log_app_info(void)
 	log_sys("%s\r\n", author);
 	log_sys("%s\r\n", line);
 	log_sys("Chip: %s\r\n", MDP_BOARD_CHIP_NAME);
+	log_sys("System clock %lu MHz\r\n", MDP_CLOCK_FREQ_MHZ)
 	log_sys("Software version: %s %s\r\n", MDP_APP_VERSION,
 		MDP_APP_DEBUG ? "debug" : "release");
 	log_sys("Board revision: %s\r\n", MDP_BOARD_REVISION);
