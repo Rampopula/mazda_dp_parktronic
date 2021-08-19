@@ -46,7 +46,8 @@ autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
 autogen/Core/Src/system_stm32f1xx.c \
-app/mdp.c
+app/mdp.c \
+app/beeper/beeper.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -110,7 +111,8 @@ C_INCLUDES =  \
 -Icommon/ \
 -Iboardinfo/ \
 -Iapp/ \
--Iapp/misc/
+-Iapp/misc/ \
+-Iapp/beeper/
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
