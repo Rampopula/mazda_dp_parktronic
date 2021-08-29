@@ -31,6 +31,7 @@ C_SOURCES =  \
 autogen/Core/Src/main.c \
 autogen/Core/Src/stm32f1xx_it.c \
 autogen/Core/Src/stm32f1xx_hal_msp.c \
+autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_can.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
