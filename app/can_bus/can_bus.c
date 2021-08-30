@@ -2,6 +2,7 @@
 #include "log.h"
 
 #include "can_hal.h"
+#include "can_spi.h"
 
 #include <errno.h>
 
@@ -72,10 +73,10 @@ struct mdp_can mdp_get_can_hal_interface(void)
 {
 	struct mdp_can intf = {
 		.ops = {
-			.start = NULL,
-			.stop = NULL,
-			.read = NULL,
-			.write = NULL
+			.start = mdp_can_spi_start,
+			.stop = mdp_can_spi_stop,
+			.read = mdp_can_spi_read,
+			.write = mdp_can_spi_write
 		}
 	};
 
