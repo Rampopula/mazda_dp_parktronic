@@ -12,6 +12,8 @@
 
 #include "stm32f1xx_hal.h"
 
+extern CAN_HandleTypeDef hcan;
+
 int mdp_can_hal_start(void);
 int mdp_can_hal_stop(void);
 int mdp_can_hal_read(uint32_t *msg_id, uint8_t *data, uint32_t *size);
