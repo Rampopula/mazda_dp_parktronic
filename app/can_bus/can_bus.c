@@ -1,6 +1,8 @@
 #include "can_bus.h"
 #include "log.h"
 
+#include "can_hal.h"
+
 #include <errno.h>
 
 #ifdef MDP_MODULE
@@ -56,10 +58,10 @@ struct mdp_can mdp_get_can_hal_interface(void)
 {
 	struct mdp_can intf = {
 		.ops = {
-			.start = NULL,
-			.stop = NULL,
-			.read = NULL,
-			.write = NULL
+			.start = mdp_can_hal_start,
+			.stop = mdp_can_hal_stop,
+			.read = mdp_can_hal_read,
+			.write = mdp_can_hal_write
 		}
 	};
 
