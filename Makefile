@@ -52,7 +52,8 @@ app/mdp.c \
 app/beeper/beeper.c \
 app/can_bus/can_bus.c \
 app/can_bus/can_hal/can_hal.c \
-app/can_bus/can_spi/can_spi.c
+app/can_bus/can_spi/can_spi.c \
+app/can_bus/can_spi/mcp2515/mcp2515.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -120,7 +121,8 @@ C_INCLUDES =  \
 -Iapp/beeper/ \
 -Iapp/can_bus/ \
 -Iapp/can_bus/can_hal/ \
--Iapp/can_bus/can_spi/
+-Iapp/can_bus/can_spi/ \
+-Iapp/can_bus/can_spi/mcp2515
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
