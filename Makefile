@@ -48,6 +48,7 @@ autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
 autogen/Core/Src/system_stm32f1xx.c \
+common/time/time.c \
 app/mdp.c \
 app/beeper/beeper.c \
 app/can_bus/can_bus.c \
@@ -115,6 +116,7 @@ C_INCLUDES =  \
 -Iautogen/Drivers/CMSIS/Device/ST/STM32F1xx/Include \
 -Iautogen/Drivers/CMSIS/Include \
 -Icommon/ \
+-Icommon/time \
 -Iboardinfo/ \
 -Iapp/ \
 -Iapp/misc/ \
