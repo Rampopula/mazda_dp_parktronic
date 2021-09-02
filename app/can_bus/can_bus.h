@@ -10,15 +10,7 @@
 #ifndef __MDP_CAN_BUS_H__
 #define __MDP_CAN_BUS_H__
 
-#include <stdint.h>
-
-#define MDP_CAN_FRAME_LEN	8
-
-struct mdp_can_msg {
-	uint32_t id;
-	uint32_t size;
-	uint8_t data[MDP_CAN_FRAME_LEN];
-};
+#include "can_bus_def.h"
 
 struct mdp_can_ops {
 	int(*start)(void);
