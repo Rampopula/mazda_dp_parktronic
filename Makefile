@@ -52,6 +52,7 @@ common/time/time.c \
 app/mdp.c \
 app/beeper/beeper.c \
 app/can_bus/can_bus.c \
+app/can_bus/can_sniffer/can_sniffer.c \
 app/can_bus/can_hal/can_hal.c \
 app/can_bus/can_spi/can_spi.c \
 app/can_bus/can_spi/mcp2515/mcp2515.c \
@@ -124,6 +125,7 @@ C_INCLUDES =  \
 -Iapp/misc/ \
 -Iapp/beeper/ \
 -Iapp/can_bus/ \
+-Iapp/can_bus/can_sniffer \
 -Iapp/can_bus/can_hal/ \
 -Iapp/can_bus/can_spi/ \
 -Iapp/can_bus/can_spi/mcp2515 \
