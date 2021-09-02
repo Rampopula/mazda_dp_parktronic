@@ -51,6 +51,8 @@
 #define MAZDA_STAT_ID		0x433 /* ID of the status message */
 #define MAZDA_STAT_RGEAR_BYTE	3 /* Reverse gear byte number */
 #define MAZDA_STAT_RGEAR_BIT	1 /* Reverse gear bit number */
+#define MAZDA_STAT_HBRAKE_BYTE	3 /* Hand brake byte number */
+#define MAZDA_STAT_HBRAKE_BIT	0 /* Hand brake bit number */
 
 /**
  * @brief Initialize Mazda Display Parktronic application.
