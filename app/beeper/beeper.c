@@ -49,16 +49,6 @@ static inline void beep_toggle(void)
 	}
 }
 
-static inline bool beep_time_elapsed(uint32_t time_ms)
-{
-	if (MDP_TIMESTAMP.ticks - beep_ts.ticks >= time_ms) {
-		beep_ts = MDP_TIMESTAMP;
-		return true;
-	}
-
-	return false;
-}
-
 bool mdp_beeper_init(uint32_t freq)
 {
 	if (!IN_RANGE(freq, MDP_BEEP_MIN_FREQ, MDP_BEEP_MAX_FREQ)) {
@@ -87,11 +77,11 @@ void mdp_beeper_beep(void)
 		beeper_off();
 		break;
 	case MDP_BEEP_SLOW:
-		if (beep_time_elapsed(MDP_BEEP_SLOW_INTERVAL))
+		if (mdp_tm_elapsed(&beep_ts, MDP_BEEP_SLOW_INTERVAL))
 			beep_toggle();
 		break;
 	case MDP_BEEP_FAST:
-		if (beep_time_elapsed(MDP_BEEP_FAST_INTERVAL))
+		if (mdp_tm_elapsed(&beep_ts, MDP_BEEP_FAST_INTERVAL))
 			beep_toggle();
 		break;
 	case MDP_BEEP_CONST:
