@@ -63,6 +63,8 @@
 #define MAZDA_STAT_RGEAR_BIT	1 /* Reverse gear bit number */
 #define MAZDA_STAT_HBRAKE_BYTE	3 /* Hand brake byte number */
 #define MAZDA_STAT_HBRAKE_BIT	0 /* Hand brake bit number */
+#define MAZDA_STAT_FLDOOR_BYTE	0 /* Front left door byte number */
+#define MAZDA_STAT_FLDOOR_BIT	7 /* Front left door bit number */
 
 /**
  * @brief Initialize Mazda Display Parktronic application.
