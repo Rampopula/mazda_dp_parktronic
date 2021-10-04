@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MDP_BEEP_SLOW_INTERVAL	200
+#define MDP_BEEP_SLOW_INTERVAL	300
 #define MDP_BEEP_FAST_INTERVAL	100
 
 typedef enum {

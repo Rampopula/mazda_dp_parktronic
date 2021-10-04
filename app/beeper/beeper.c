@@ -99,11 +99,7 @@ bool mdp_beeper_set_mode(mdp_beep_mode_t mode)
 		return false;
 	}
 
-	if (!beeper_inited)
-		log_dbg("Beeper not inited!\r\n");
-
 	beep_mode = mode;
 
-	log_dbg("Beeper mode changed to %s\r\n", mode_to_str(mode));
 	return true;
 }
