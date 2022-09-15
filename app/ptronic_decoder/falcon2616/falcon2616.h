@@ -62,11 +62,11 @@
 
 struct f2616_distance {
 	bool valid_data;
-	uint32_t distance_cm[F2616_SNS_CNT];
+	uint32_t cm[F2616_SNS_CNT];
 };
 
 bool f2616_ready(void);
 
-struct f2616_distance f2616_read_distance(void);
+struct f2616_distance *f2616_read_distance(void);
 
 #endif /* __MDP_F2616_DECODER_H__ */

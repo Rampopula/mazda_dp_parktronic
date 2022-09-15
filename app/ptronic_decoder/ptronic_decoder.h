@@ -46,22 +46,13 @@ static inline bool ptronic_ready(void)
 	return false;
 }
 
-static inline struct ptronic_data ptronic_read_data(void)
+static inline struct ptronic_data *ptronic_read_data(void)
 {
 #ifdef MDP_PTRONIC_F2616
-	struct f2616_distance f2616_distance;
+	return (struct ptronic_data *)f2616_read_distance();
+#else
+#error "Parktronic is not defined!"
 #endif
-	struct ptronic_data ptronic_data;
-
-	ptronic_data.valid = false;
-#ifdef MDP_PTRONIC_F2616
-	f2616_distance = f2616_read_distance();
-	ptronic_data.valid = f2616_distance.valid_data;
-	memcpy(ptronic_data.distance, f2616_distance.distance_cm,
-	       sizeof(f2616_distance.distance_cm));
-#endif
-
-	return ptronic_data;
 }
 
 #endif /* __MDP_DECODER_H__ */

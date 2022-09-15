@@ -67,6 +67,7 @@ static int read_data;
 static uint16_t frame;
 static volatile uint32_t ptronic_ready;
 static volatile uint32_t distance_cm[F2616_SNS_CNT];
+static struct f2616_distance f2616_distance;
 
 static void f2616_convert_distance(uint16_t data)
 {
@@ -142,23 +143,21 @@ bool f2616_ready(void)
 	return (ptronic_ready & PTRONIC_READY_MASK);
 }
 
-struct f2616_distance f2616_read_distance(void)
+struct f2616_distance *f2616_read_distance(void)
 {
-	struct f2616_distance distance;
-
 	if (distance_cm[F2616_SNS_A] & F2616_SNS_INVAL &&
 	    distance_cm[F2616_SNS_B] & F2616_SNS_INVAL &&
 	    distance_cm[F2616_SNS_C] & F2616_SNS_INVAL &&
 	    distance_cm[F2616_SNS_D] & F2616_SNS_INVAL) {
-		distance.valid_data = false;
-		return distance;
+		f2616_distance.valid_data = false;
+		return &f2616_distance;
 	}
 
-	distance.valid_data = true;
-	distance.distance_cm[F2616_SNS_A] = distance_cm[F2616_SNS_A];
-	distance.distance_cm[F2616_SNS_B] = distance_cm[F2616_SNS_B];
-	distance.distance_cm[F2616_SNS_C] = distance_cm[F2616_SNS_C];
-	distance.distance_cm[F2616_SNS_D] = distance_cm[F2616_SNS_D];
+	f2616_distance.valid_data = true;
+	f2616_distance.cm[F2616_SNS_A] = distance_cm[F2616_SNS_A];
+	f2616_distance.cm[F2616_SNS_B] = distance_cm[F2616_SNS_B];
+	f2616_distance.cm[F2616_SNS_C] = distance_cm[F2616_SNS_C];
+	f2616_distance.cm[F2616_SNS_D] = distance_cm[F2616_SNS_D];
 
-	return distance;
+	return &f2616_distance;
 }

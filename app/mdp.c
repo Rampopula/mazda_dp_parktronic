@@ -334,6 +334,8 @@ exit_error:
 void mdp_run(void)
 {
 	bool state_updated;
+	char dist_str[MAZDA_DP_CHAR_NUM * 2];
+	struct ptronic_data *data;
 
 	state_updated = get_bit_state_updated(mdp_ptronic_is_enabled(), 0,
 					      &ptronic_state);
@@ -361,13 +363,12 @@ void mdp_run(void)
 	}
 
 	if (ptronic_state.curr) {
-		char dist_str[MAZDA_DP_CHAR_NUM * 2];
-		struct ptronic_data data = ptronic_read_data();
+		data = ptronic_read_data();
 
-		mdp_beeper_set_mode(distance_to_beep(&data));
+		mdp_beeper_set_mode(distance_to_beep(data));
 		mdp_beeper_beep();
 
-		distance_to_string(&data, dist_str);
+		distance_to_string(data, dist_str);
 		update_display(dist_str);
 
 		mdp_can_transfer_pjb_to_dp_replace_dp();
