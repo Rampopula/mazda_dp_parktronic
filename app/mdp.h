@@ -44,9 +44,9 @@
 #define MAZDA_DP_MISC_SYMB0	0 /* CD IN/MD IN/ST/Dolby/RPT/RDM/AF symbols */
 #define MAZDA_DP_MISC_SYMB1	1 /* PTY/TA/TP/AUTO-M symbols */
 #define MAZDA_DP_MISC_SYMB2	3 /* "":"/"'"/"." symbols */
-#define MAZDA_DP_MISC_SYMB0_BIT {0, 1, 2, 3, 4, 5, 6} /* Bits number in byte */
-#define MAZDA_DP_MISC_SYMB1_BIT {4, 5, 6, 7} /* Bits number in byte */
-#define MAZDA_DP_MISC_SYMB2_BIT {1, 2, 4, 5} /* Bits number in byte */
+#define MAZDA_DP_MISC_SYMB0_MSK 0x80 /* Dispay sysmbols mask */
+#define MAZDA_DP_MISC_SYMB1_MSK 0x0F /* Dispay sysmbols mask */
+#define MAZDA_DP_MISC_SYMB2_MSK 0xC9 /* Dispay sysmbols mask */
 #define MAZDA_DP_LHALF		0 /* ID of the display left half */
 #define MAZDA_DP_RHALF		1 /* ID of the display right half */
 #define MAZDA_DP_REG_NUM	2 /* Number of display registers */

@@ -248,33 +248,15 @@ static void app_inited_blink(void)
 
 static void mdp_can_replace_data(struct mdp_can_msg *msg)
 {
-	static const uint8_t dp_misc_symb0[] = MAZDA_DP_MISC_SYMB0_BIT;
-	static const uint8_t dp_misc_symb1[] = MAZDA_DP_MISC_SYMB1_BIT;
-	static const uint8_t dp_misc_symb2[] = MAZDA_DP_MISC_SYMB2_BIT;
-
 	switch(msg->id) {
 	case MAZDA_DP_MISC_SYMB_ID:
 		/* Turn off all active symbols */
 		/* CD IN/MD IN/ST/Dolby/RPT/RDM/AF symbols  */
-		for (int i = 0; i < ARRAY_SIZE(dp_misc_symb0); i++) {
-			RESET_BIT(msg->data[MAZDA_DP_MISC_SYMB0],
-				  dp_misc_symb0[i]);
-		}
-
-		/* Turn off all active symbols */
 		/* PTY/TA/TP/AUTO-M symbols */
-		for (int i = 0; i < ARRAY_SIZE(dp_misc_symb1); i++) {
-			RESET_BIT(msg->data[MAZDA_DP_MISC_SYMB1],
-				  dp_misc_symb1[i]);
-		}
-
-		/* Turn off all active symbols */
 		/* "":"/"'"/"." symbols */
-		for (int i = 0; i < ARRAY_SIZE(dp_misc_symb2); i++) {
-			RESET_BIT(msg->data[MAZDA_DP_MISC_SYMB2],
-				  dp_misc_symb2[i]);
-		}
-
+		msg->data[MAZDA_DP_MISC_SYMB0] &= MAZDA_DP_MISC_SYMB0_MSK;
+		msg->data[MAZDA_DP_MISC_SYMB1] &= MAZDA_DP_MISC_SYMB1_MSK;
+		msg->data[MAZDA_DP_MISC_SYMB2] &= MAZDA_DP_MISC_SYMB2_MSK;
 		break;
 	case MAZDA_DP_LHALF_ID:
 		memcpy(msg->data, mdp_buffer[MAZDA_DP_LHALF], msg->size);
