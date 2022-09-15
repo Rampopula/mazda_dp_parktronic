@@ -357,7 +357,7 @@ void mdp_run(void)
 					      &ptronic_state);
 	if (state_updated) {
 		if (ptronic_state.curr) {
-			log_info("Parktronic enabled!\r\n");
+			log_sys("Parktronic enabled!\r\n");
 
 			mdp_beeper_set_mode(MDP_BEEP_CONST);
 			mdp_beeper_beep();
@@ -369,7 +369,7 @@ void mdp_run(void)
 
 			mdp_can_bypass_off();
 		} else {
-			log_info("Parktronic disabled!\r\n");
+			log_sys("Parktronic disabled!\r\n");
 
 			mdp_can_bypass_on();
 
