@@ -47,6 +47,7 @@ static uint8_t mdp_buffer[MAZDA_DP_REG_NUM][MAZDA_DP_MSG_SIZE];
 
 static void error_handler(void)
 {
+#if (MDP_USE_CAN_BYPASS == 1)
 	mdp_can_bypass_on();
 
 	__disable_irq();
@@ -54,6 +55,7 @@ static void error_handler(void)
 	while(true) {
 
 	}
+#endif
 }
 
 static void log_app_info(void)
@@ -305,8 +307,13 @@ void mdp_init(void)
 	dp_can = mdp_get_can_spi_interface();
 	pjb_can = mdp_get_can_hal_interface();
 
+#if (MDP_USE_CAN_BYPASS == 1)
 	/* Bypass all CAN packets through while board is not inited */
 	mdp_can_bypass_on();
+#else
+	mdp_can_bypass_off();
+#endif
+
 	mdp_sysled_off();
 
 #if (MDP_BEEPER_ENABLED == 1)
@@ -331,8 +338,9 @@ void mdp_init(void)
 
 	app_inited_blink();
 
+#if (MDP_USE_CAN_BYPASS == 0)
 	mdp_can_bypass_off();
-
+#endif
 	return;
 
 exit_error:
