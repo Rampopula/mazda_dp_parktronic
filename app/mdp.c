@@ -20,6 +20,8 @@
 #define MDP_DIST_BEEP_SLOW	90	/* Distance in centimeters */
 #define MDP_DIST_BEEP_FAST	30	/* Distance in centimeters */
 
+#define MDP_MAGIC_SLEEP_MS	1	/* Fixes display flickering */
+
 #define MDP_NO_DATA_STR		"    -.-m    "
 #define MDP_DATA_TMPL_STR	"    %u.%um    "
 #define MDP_STEP		30
@@ -45,6 +47,7 @@ static uint8_t mdp_buffer[MAZDA_DP_REG_NUM][MAZDA_DP_MSG_SIZE];
 
 static void error_handler(void)
 {
+#if (MDP_USE_CAN_BYPASS == 1)
 	mdp_can_bypass_on();
 
 	__disable_irq();
@@ -52,6 +55,7 @@ static void error_handler(void)
 	while(true) {
 
 	}
+#endif
 }
 
 static void log_app_info(void)
@@ -269,15 +273,19 @@ static void mdp_can_replace_data(struct mdp_can_msg *msg)
 	}
 }
 
-static void mdp_can_transfer_pjb_to_dp_replace_dp(void)
+static void mdp_can_transfer(bool replace)
 {
 	int ret;
 
 	ret = mdp_can_read(&pjb_can);
 	if (ret > 0) {
-		mdp_can_replace_data(&pjb_can.msg);
+		if (replace)
+			mdp_can_replace_data(&pjb_can.msg);
 
 		memcpy(&dp_can.msg, &pjb_can.msg, sizeof(dp_can.msg));
+
+		/* Magic sleep */
+		mdp_tm_msleep(MDP_MAGIC_SLEEP_MS);
 
 		ret = mdp_can_write(&dp_can);
 		if (ret < 0) {
@@ -299,8 +307,13 @@ void mdp_init(void)
 	dp_can = mdp_get_can_spi_interface();
 	pjb_can = mdp_get_can_hal_interface();
 
+#if (MDP_USE_CAN_BYPASS == 1)
 	/* Bypass all CAN packets through while board is not inited */
 	mdp_can_bypass_on();
+#else
+	mdp_can_bypass_off();
+#endif
+
 	mdp_sysled_off();
 
 #if (MDP_BEEPER_ENABLED == 1)
@@ -323,6 +336,9 @@ void mdp_init(void)
 		goto exit_error;
 	}
 
+#if (MDP_USE_CAN_BYPASS == 1)
+	mdp_can_bypass_off();
+#endif
 	app_inited_blink();
 
 	return;
@@ -337,6 +353,8 @@ void mdp_run(void)
 	char dist_str[MAZDA_DP_CHAR_NUM * 2];
 	struct ptronic_data *data;
 
+	mdp_can_transfer(ptronic_state.curr);
+
 	state_updated = get_bit_state_updated(mdp_ptronic_is_enabled(), 0,
 					      &ptronic_state);
 	if (state_updated) {
@@ -350,12 +368,8 @@ void mdp_run(void)
 
 			mdp_beeper_set_mode(MDP_BEEP_NONE);
 			mdp_beeper_beep();
-
-			mdp_can_bypass_off();
 		} else {
 			log_sys("Parktronic disabled!\r\n");
-
-			mdp_can_bypass_on();
 
 			mdp_beeper_set_mode(MDP_BEEP_NONE);
 			mdp_beeper_beep();
@@ -370,7 +384,5 @@ void mdp_run(void)
 
 		distance_to_string(data, dist_str);
 		update_display(dist_str);
-
-		mdp_can_transfer_pjb_to_dp_replace_dp();
 	}
 }

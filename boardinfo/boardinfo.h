@@ -18,6 +18,7 @@
 
 #define MDP_PTRONIC_F2616
 #define MDP_BEEPER_ENABLED	1
+#define MDP_USE_CAN_BYPASS	1
 
 #define MDP_APP_VERSION		"v0.1"
 #define MDP_BOARD_REVISION	"rev.01"
