@@ -50,6 +50,7 @@ autogen/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
 autogen/Core/Src/system_stm32f1xx.c \
 common/time/time.c \
 app/mdp.c \
+app/cli/cli.c \
 app/beeper/beeper.c \
 app/can_bus/can_bus.c \
 app/can_bus/can_sniffer/can_sniffer.c \
@@ -123,6 +124,7 @@ C_INCLUDES =  \
 -Icommon/time \
 -Iboardinfo/ \
 -Iapp/ \
+-Iapp/cli/ \
 -Iapp/misc/ \
 -Iapp/beeper/ \
 -Iapp/can_bus/ \

@@ -1,4 +1,5 @@
 #include "mdp.h"
+#include "cli.h"
 #include "beeper.h"
 #include "common.h"
 #include "can_bus.h"
@@ -59,7 +60,7 @@ static void error_handler(void)
 #endif
 }
 
-static void log_app_info(void)
+void log_app_info(void)
 {
 	const char *line = "*****************************************";
 	const char *app_name = "Mazda Display Parktronic";
@@ -403,4 +404,6 @@ void mdp_run(void)
 		distance_to_string(data, dist_str);
 		update_display(dist_str);
 	}
+
+	cli_process();
 }
