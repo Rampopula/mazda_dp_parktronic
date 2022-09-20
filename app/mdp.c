@@ -15,6 +15,7 @@
 #define MDP_BEEP_FREQ		2755
 #define MDP_INIT_BLINK_DELAY	100	/* Init done blink delay msec */
 #define MDP_INIT_BEEP_DELAY	600	/* Beep time after parktronic on */
+#define MDP_ERROR_BLINK_DELAY	50	/* Error state blink delay msec */
 
 #define MDP_DIST_BEEP_NONE	150	/* Distance in centimeters */
 #define MDP_DIST_BEEP_SLOW	90	/* Distance in centimeters */
@@ -45,15 +46,15 @@ static struct mdp_can dp_can, pjb_can;
 static const char *dist_steps[] = MDP_STEP_STR;
 static uint8_t mdp_buffer[MAZDA_DP_REG_NUM][MAZDA_DP_MSG_SIZE];
 
+static void app_error_blink();
+
 static void error_handler(void)
 {
 #if (MDP_USE_CAN_BYPASS == 1)
 	mdp_can_bypass_on();
 
-	__disable_irq();
-
 	while(true) {
-
+		app_error_blink();
 	}
 #endif
 }
@@ -250,6 +251,21 @@ static void app_inited_blink(void)
 	mdp_sysled_off();
 }
 
+static void app_error_blink(void)
+{
+	mdp_sysled_toggle();
+	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY);
+	mdp_sysled_toggle();
+	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY);
+
+	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY * 10);
+
+	mdp_sysled_toggle();
+	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY);
+	mdp_sysled_toggle();
+	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY);
+}
+
 static void mdp_can_replace_data(struct mdp_can_msg *msg)
 {
 	switch(msg->id) {
@@ -279,8 +295,10 @@ static void mdp_can_transfer(bool replace)
 
 	ret = mdp_can_read(&pjb_can);
 	if (ret > 0) {
-		if (replace)
+		if (replace) {
 			mdp_can_replace_data(&pjb_can.msg);
+			mdp_sysled_toggle();
+		}
 
 		memcpy(&dp_can.msg, &pjb_can.msg, sizeof(dp_can.msg));
 
