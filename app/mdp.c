@@ -23,6 +23,7 @@
 #define MDP_DIST_BEEP_FAST	30	/* Distance in centimeters */
 
 #define MDP_MAGIC_SLEEP_MS	1	/* Fixes display flickering */
+#define MDP_DP_PACKET_PERIOD	120	/* Display packets send period */
 
 #define MDP_NO_DATA_STR		"    -.-m    "
 #define MDP_DATA_TMPL_STR	"    %u.%um    "
@@ -35,6 +36,8 @@
 		"\xF0\xF0\x3E ",    "\xF0\xF0  ",       "\xF0\x3E  ",		\
 		"\xF0   ",          "\x3E   ",          "\x3E   "		\
 	}
+
+#define MDP_DP_MISC_PACKET	{0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 struct mdp_state {
 	uint32_t curr;
@@ -80,7 +83,7 @@ void log_app_info(void)
 	log_sys("%s\r\n", line);
 }
 
-static void update_display(char *string)
+static void update_display(const char *string)
 {
 	size_t string_len;
 	static char dp_string[MAZDA_DP_CHAR_NUM];
@@ -366,6 +369,141 @@ exit_error:
 	error_handler();
 }
 
+uint8_t dp_misc_packet[] = MDP_DP_MISC_PACKET;
+
+int mdp_can_send_text(const char *text)
+{
+	int ret;
+
+	update_display(text);
+
+	dp_can.msg.id = MAZDA_DP_MISC_SYMB_ID;
+	dp_can.msg.size = sizeof(dp_misc_packet);
+	memcpy(dp_can.msg.data, dp_misc_packet, dp_can.msg.size);
+	ret = mdp_can_write(&dp_can);
+	if (ret < 0) {
+		log_err("MDP CAN DP write failed!\r\n");
+		return ret;
+	}
+
+	mdp_tm_msleep(MDP_MAGIC_SLEEP_MS);
+
+	dp_can.msg.id = MAZDA_DP_LHALF_ID;
+	dp_can.msg.size = sizeof(mdp_buffer[MAZDA_DP_LHALF]);
+	memcpy(dp_can.msg.data, mdp_buffer[MAZDA_DP_LHALF], dp_can.msg.size);
+	ret = mdp_can_write(&dp_can);
+	if (ret < 0) {
+		log_err("MDP CAN DP write failed!\r\n");
+		return ret;
+	}
+
+	mdp_tm_msleep(MDP_MAGIC_SLEEP_MS);
+
+	dp_can.msg.id = MAZDA_DP_RHALF_ID;
+	dp_can.msg.size = sizeof(mdp_buffer[MAZDA_DP_RHALF]);
+	memcpy(dp_can.msg.data,  mdp_buffer[MAZDA_DP_RHALF], dp_can.msg.size);
+	ret = mdp_can_write(&dp_can);
+	if (ret < 0) {
+		log_err("MDP CAN DP write failed!\r\n");
+		return ret;
+	}
+
+	mdp_tm_msleep(MDP_MAGIC_SLEEP_MS);
+
+	return 0;
+}
+
+void mdp_dp_show_num(uint8_t num)
+{
+	switch (num) {
+	case 1:
+		dp_misc_packet[1] = 0x02;
+		dp_misc_packet[2] = 0x00;
+		break;
+	case 2:
+		dp_misc_packet[1] = 0x01;
+		dp_misc_packet[2] = 0x00;
+		break;
+	case 3:
+		dp_misc_packet[1] = 0x00;
+		dp_misc_packet[2] = 0x80;
+		break;
+	case 4:
+		dp_misc_packet[1] = 0x00;
+		dp_misc_packet[2] = 0x40;
+		break;
+	case 5:
+		dp_misc_packet[1] = 0x00;
+		dp_misc_packet[2] = 0x20;
+		break;
+	case 6:
+		dp_misc_packet[1] = 0x00;
+		dp_misc_packet[2] = 0x10;
+		break;
+	default:
+		dp_misc_packet[1] = 0x00;
+		dp_misc_packet[2] = 0x00;
+		break;
+	}
+}
+
+void mdp_cmd_set_misc(uint8_t byte, uint8_t data)
+{
+	if (byte == 0)
+		dp_misc_packet[byte] = data | 0x80;
+	else
+		dp_misc_packet[byte] = data;
+}
+
+bool send_loop_cmd = false;
+char send_loop_str[MAZDA_DP_CHAR_NUM] = "test";
+
+void mdp_cmd_send_loop(const char *str)
+{
+	size_t len = 0;
+
+	if (send_loop_cmd) {
+		send_loop_cmd = false;
+		return;
+	} else {
+		send_loop_cmd = true;
+	}
+
+	if (!str || !strlen(str)) {
+		memset(send_loop_str, '\0', sizeof(send_loop_str));
+		return;
+	}
+
+	len = MIN(strlen(str), sizeof(send_loop_str));
+
+	memcpy(send_loop_str, str, len);
+	memset(send_loop_str + len, '\0', sizeof(send_loop_str) - len);
+}
+
+static void mdp_send_loop(void)
+{
+	static bool ts_inited = false;
+	static struct mdp_timestamp ts;
+	static int num = 1;
+
+	if (!send_loop_cmd)
+		return;
+
+	if (!ts_inited) {
+		ts_inited = true;
+		ts = MDP_TIMESTAMP;
+	}
+
+	if (mdp_tm_elapsed(&ts, MDP_DP_PACKET_PERIOD)) {
+		mdp_can_bypass_off();
+		mdp_can_send_text(send_loop_str);
+		mdp_dp_show_num(num++);
+
+		if (num > 6)
+			num = 1;
+	}
+}
+
 void mdp_run(void)
 {
 	bool state_updated;
@@ -406,4 +544,6 @@ void mdp_run(void)
 	}
 
 	cli_process();
+
+	mdp_send_loop();
 }
