@@ -59,6 +59,7 @@ app/can_bus/can_spi/can_spi.c \
 app/can_bus/can_spi/mcp2515/mcp2515.c \
 app/ptronic_decoder/falcon2616/falcon2616.c \
 app/ptronic_decoder/falcon2616/falcon2616_gpio_intf.c \
+app/misc/can_bypass/can_bypass_switch.c \
 app/sequences/sequences.c
 
 # ASM sources
@@ -134,6 +135,7 @@ C_INCLUDES =  \
 -Iapp/can_bus/can_spi/mcp2515 \
 -Iapp/ptronic_decoder/ \
 -Iapp/ptronic_decoder/falcon2616 \
+-Iapp/misc/can_bypass/ \
 -Iapp/sequences/
 
 # compile gcc flags
