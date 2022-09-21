@@ -66,6 +66,36 @@
 #define MAZDA_STAT_FLDOOR_BYTE	0 /* Front left door byte number */
 #define MAZDA_STAT_FLDOOR_BIT	7 /* Front left door bit number */
 
+/* ASCII Symbols */
+#define DP_ARR_RIGHT_SYMB	"\x1C"
+#define DP_ARR_LEFT_SYMB	"\x1D"
+#define DP_ARR_UP_SYM		"\x1E"
+#define DP_ARR_DOWN_SYMB	"\x1F"
+#define DP_LITTLE_1_SYMB	"\x9E"
+#define DP_LITTLE_3_SYMB	"\xAE"
+#define DP_CENTER_DOT_SYMB	"\xA5"
+#define DP_JAPAN_SMILE_SYMB	"\xBC"
+#define DP_CELSIUS_SYMB		"\xDF"
+#define DP_BLACK_1_SYMB		"\xE1"
+#define DP_BLACK_2_SYMB		"\xE2"
+#define DP_BLACK_3_SYMB		"\xE3"
+#define DP_BLACK_4_SYMB		"\xE4"
+#define DP_BLACK_5_SYMB		"\xE5"
+#define DP_BLACK_6_SYMB		"\xE6"
+
+#define DP_REGULAR_1_SYMB	"\xE7"
+#define DP_REGULAR_2_SYMB	"\xE8"
+#define DP_REGULAR_3_SYMB	"\xE9"
+#define DP_REGULAR_4_SYMB	"\xEA"
+#define DP_REGULAR_5_SYMB	"\xEB"
+#define DP_REGULAR_6_SYMB	"\xEC"
+
+#define DP_TRIANGLE_UP_SYMB	"\xED"
+#define DP_TRIANGLE_DOWN_SYMB	"\xEE"
+#define DP_TRIANGLE_UPDOWN_SYMB	"\xEF"
+#define DP_TRIANGLE_RIGHT_SYMB	"\xF0"
+#define DP_TRIANGLE_LEFT_SYMB	"\xF1"
+
 /**
  * @brief Initialize Mazda Display Parktronic application.
  *        This function must be called before the main loop.
