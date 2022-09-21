@@ -128,6 +128,43 @@ static int parse_int(void *arg)
 	return (int)result;
 }
 
+static void cmd_send_ascii(void *arg)
+{
+	int ret;
+	char *tmp = (char *)arg;
+	static uint8_t ch = 0x1B;
+	char buf[] = {0x00, 0x00};
+	extern int mdp_can_send_text(const char *text);
+
+	if (!tmp || !tmp[0]) {
+		buf[0] = ch;
+
+		ret = mdp_can_send_text(buf);
+		if (ret) {
+			printf("\r\nERR1: %d\r\n", ret);
+		} else {
+			printf("\r\nOK, ASCII: 0x%02X\r\n", ch++);
+		}
+
+		return;
+	}
+
+	ret = parse_int(tmp);
+	if (ret < 0)
+		return;
+
+	ch = (uint8_t)ret;
+
+	buf[0] = ch;
+
+	ret = mdp_can_send_text(buf);
+	if (ret) {
+		printf("\r\nERR2: %d\r\n", ret);
+	} else {
+		printf("\r\nOK\r\n");
+	}
+}
+
 static void cmd_set_misc0(void *arg)
 {
 	int ret;
@@ -333,6 +370,7 @@ static struct cli_cmds {
 	{.name = "bypass",	.func = cmd_bypass},
 	{.name = "send",	.func = cmd_send},
 	{.name = "send_loop",	.func = cmd_send_loop},
+	{.name = "send_ascii",	.func = cmd_send_ascii},
 	{.name = "set_misc0",	.func = cmd_set_misc0},
 	{.name = "set_misc1",	.func = cmd_set_misc1},
 	{.name = "set_misc2",	.func = cmd_set_misc2},
