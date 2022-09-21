@@ -47,9 +47,6 @@ int mdp_can_read(struct mdp_can *can)
 	if (ret <= 0)
 		return ret;
 
-	if (can->sniffer)
-		can->sniffer->sniff(can->sniffer, &can->msg);
-
 	return ret;
 }
 
@@ -64,24 +61,9 @@ int mdp_can_write(struct mdp_can *can)
 	return can->ops.write(can->msg.id, can->msg.data, can->msg.size);
 }
 
-int mdp_can_attach_sniffer(struct mdp_can *can,
-			   struct mdp_can_sniffer *sniffer)
-{
-	if (!can || !sniffer) {
-		log_err("Invalid arguments: can = %p, sniffer = %p\r\n",
-			can, sniffer);
-		return -EINVAL;
-	}
-
-	can->sniffer = sniffer;
-
-	return 0;
-}
-
 struct mdp_can mdp_get_can_hal_interface(void)
 {
 	struct mdp_can intf = {
-		.sniffer = NULL,
 		.ops = {
 			.start = mdp_can_hal_start,
 			.stop = mdp_can_hal_stop,
@@ -96,7 +78,6 @@ struct mdp_can mdp_get_can_hal_interface(void)
  struct mdp_can mdp_get_can_spi_interface(void)
 {
 	struct mdp_can intf = {
-		.sniffer = NULL,
 		.ops = {
 			.start = mdp_can_spi_start,
 			.stop = mdp_can_spi_stop,
