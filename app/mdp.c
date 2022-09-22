@@ -46,6 +46,10 @@ static struct mdp_can dp_can, pjb_can;
 static const char *dist_steps[] = MDP_STEP_STR;
 static uint8_t mdp_buffer[MAZDA_DP_REG_NUM][MAZDA_DP_MSG_SIZE];
 
+#if (MDP_OVERRIDE_GREETING == 1)
+static bool greetin_replace;
+#endif
+
 static void app_error_blink();
 
 static void error_handler(void)
@@ -295,7 +299,15 @@ static void mdp_can_transfer(bool replace)
 
 	ret = mdp_can_read(&pjb_can);
 	if (ret > 0) {
-		if (replace) {
+#if (MDP_OVERRIDE_GREETING == 1)
+		if (pjb_can.msg.id == MAZDA_DP_MISC_SYMB_ID) {
+			greetin_replace = pjb_can.msg.data[MAZDA_DP_MISC_SYMB2];
+			greetin_replace &= BIT(MAZDA_DP_MISC_INIT_BIT);
+			if (greetin_replace)
+				update_display(MDP_GREETING_MESSAGE);
+		}
+#endif
+		if (replace || greetin_replace) {
 			mdp_can_replace_data(&pjb_can.msg);
 			mdp_sysled_toggle();
 		}

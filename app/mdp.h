@@ -47,6 +47,7 @@
 #define MAZDA_DP_MISC_SYMB0_MSK 0x80 /* Dispay sysmbols mask */
 #define MAZDA_DP_MISC_SYMB1_MSK 0x0F /* Dispay sysmbols mask */
 #define MAZDA_DP_MISC_SYMB2_MSK 0xC9 /* Dispay sysmbols mask */
+#define MAZDA_DP_MISC_INIT_BIT	0 /* Bit to turn off all symbols when ACC on */
 #define MAZDA_DP_LHALF		0 /* ID of the display left half */
 #define MAZDA_DP_RHALF		1 /* ID of the display right half */
 #define MAZDA_DP_REG_NUM	2 /* Number of display registers */
