@@ -1,0 +1,12 @@
+Oct 5, 2021: v0.1a
+  - Implemented Mazda Display Parktronic application.
+  - Support for Falcon2616 4-Sensor parking system.
+
+Sep 23, 2022: v0.2b
+  - Fixed bug with display data flickering when parktronic is on.
+  - Check parktronic state by tracking reverse gear bit in CAN status packet.
+    Thus, increased the speed of data appearing on the display.
+  - Added error message if there is no signal from parking system.
+  - Added specific LED blinking when error occures (series of two short blinks).
+  - Use CAN bypass circuit only in initial and error states.
+  - Added option to override boring car greetings like 'Hello' or 'BOSE AUDIO'.
