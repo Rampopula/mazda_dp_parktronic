@@ -23,6 +23,7 @@
 
 #define MDP_MAGIC_SLEEP_MS	1	/* Fixes display flickering */
 
+#define MDP_PARK_ERR_STR	"    ERRm    "
 #define MDP_NO_DATA_STR		"    -.-m    "
 #define MDP_DATA_TMPL_STR	"    %u.%um    "
 #define MDP_STEP		30
@@ -40,7 +41,8 @@ struct mdp_state {
 	uint32_t prev;
 };
 
-static struct mdp_state ptronic_state;
+static uint8_t mazda_stat;
+static struct mdp_state rgear_state;
 static struct mdp_can dp_can, pjb_can;
 
 static const char *dist_steps[] = MDP_STEP_STR;
@@ -299,6 +301,9 @@ static void mdp_can_transfer(bool replace)
 
 	ret = mdp_can_read(&pjb_can);
 	if (ret > 0) {
+		if (pjb_can.msg.id == MAZDA_STAT_ID)
+			mazda_stat = pjb_can.msg.data[MAZDA_STAT_RGEAR_BYTE];
+
 #if (MDP_OVERRIDE_GREETING == 1)
 		if (pjb_can.msg.id == MAZDA_DP_MISC_SYMB_ID) {
 			greetin_replace = pjb_can.msg.data[MAZDA_DP_MISC_SYMB2];
@@ -383,12 +388,12 @@ void mdp_run(void)
 	char dist_str[MAZDA_DP_CHAR_NUM * 2];
 	struct ptronic_data *data;
 
-	mdp_can_transfer(ptronic_state.curr);
+	mdp_can_transfer(rgear_state.curr);
 
-	state_updated = get_bit_state_updated(mdp_ptronic_is_enabled(), 0,
-					      &ptronic_state);
+	state_updated = get_bit_state_updated(mazda_stat, MAZDA_STAT_RGEAR_BIT,
+					      &rgear_state);
 	if (state_updated) {
-		if (ptronic_state.curr) {
+		if (rgear_state.curr) {
 			log_sys("Parktronic enabled!\r\n");
 
 			mdp_beeper_set_mode(MDP_BEEP_CONST);
@@ -406,7 +411,14 @@ void mdp_run(void)
 		}
 	}
 
-	if (ptronic_state.curr) {
+	if (rgear_state.curr) {
+		if (!mdp_ptronic_is_enabled()) {
+			/* Reverse gear detected but parktronic turned off */
+			update_display(MDP_PARK_ERR_STR);
+			log_err("Parktronic signal not detected!\r\n");
+			return;
+		}
+
 		data = ptronic_read_data();
 
 		mdp_beeper_set_mode(distance_to_beep(data));
