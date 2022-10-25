@@ -21,6 +21,9 @@ extern SPI_HandleTypeDef hspi1;
 #define __MCU_SPI_CS_GPIO_PORT (GPIOA)
 #define __MCU_SPI_CS_GPIO_PIN (GPIO_PIN_4)
 
+#define __MCU_SPI_RST_GPIO_PORT (GPIOA)
+#define __MCU_SPI_RST_GPIO_PIN (GPIO_PIN_3)
+
 #define __MCU_SPI_INTF (&hspi1)
 #define __MCU_SPI_TIMEOUT (10)
 #endif /* STM32F103xB */
@@ -62,6 +65,14 @@ static inline void mcp2515_intf_spi_cs_low(void)
 #ifdef STM32F103xB
 	HAL_GPIO_WritePin(__MCU_SPI_CS_GPIO_PORT, __MCU_SPI_CS_GPIO_PIN,
 			  GPIO_PIN_RESET);
+#endif /* STM32F103xB */
+}
+
+static inline void mcp2515_intf_reset(bool reset)
+{
+#ifdef STM32F103xB
+	HAL_GPIO_WritePin(__MCU_SPI_RST_GPIO_PORT, __MCU_SPI_RST_GPIO_PIN,
+			  reset ? GPIO_PIN_RESET : GPIO_PIN_SET);
 #endif /* STM32F103xB */
 }
 

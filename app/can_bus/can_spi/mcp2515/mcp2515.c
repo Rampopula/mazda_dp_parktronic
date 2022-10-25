@@ -24,6 +24,14 @@
 #define spi_cs_high()		mcp2515_intf_spi_cs_high()
 #define spi_cs_low()		mcp2515_intf_spi_cs_low()
 
+#define mcp2515_reset_chip()                                                   \
+	({                                                                     \
+		const uint8_t __rst_time = 10;                                 \
+		mcp2515_intf_reset(true);                                      \
+		HAL_Delay(__rst_time);                                         \
+		mcp2515_intf_reset(false);                                     \
+		HAL_Delay(__rst_time);                                         \
+	})
 #define mcp2515_config_on()	mcp2515_set_mode(MCP2515_CONFIG_MODE)
 #define mcp2515_config_off()	mcp2515_set_mode(MCP2515_NORMAL_MODE)
 
@@ -330,6 +338,8 @@ int mcp2515_init(mcp2515_osc_t osc, mcp2515_speed_t speed)
 
 	if (osc == MCP2515_FOSC_8MHZ && speed == MCP2515_SPEED_1000KBPS)
 		return -ENOTSUP;
+
+	mcp2515_reset_chip();
 
 	spi_cs_high();
 
