@@ -2,7 +2,6 @@
 #include "beeper.h"
 #include "common.h"
 #include "can_bus.h"
-#include "can_bypass_switch.h"
 #include "ptronic_decoder.h"
 #include "ptronic_switch.h"
 #include "system_led.h"
@@ -56,13 +55,9 @@ static void app_error_blink();
 
 static void error_handler(void)
 {
-#if (MDP_USE_CAN_BYPASS == 1)
-	mdp_can_bypass_on();
-
 	while(true) {
 		app_error_blink();
 	}
-#endif
 }
 
 static void log_app_info(void)
@@ -342,13 +337,6 @@ void mdp_init(void)
 	dp_can = mdp_get_can_spi_interface();
 	pjb_can = mdp_get_can_hal_interface();
 
-#if (MDP_USE_CAN_BYPASS == 1)
-	/* Bypass all CAN packets through while board is not inited */
-	mdp_can_bypass_on();
-#else
-	mdp_can_bypass_off();
-#endif
-
 	mdp_sysled_off();
 
 #if (MDP_BEEPER_ENABLED == 1)
@@ -371,9 +359,6 @@ void mdp_init(void)
 		goto exit_error;
 	}
 
-#if (MDP_USE_CAN_BYPASS == 1)
-	mdp_can_bypass_off();
-#endif
 	app_inited_blink();
 
 	return;
