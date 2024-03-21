@@ -319,11 +319,11 @@ static void mdp_can_transfer(bool replace)
 
 		ret = mdp_can_write(&dp_can);
 		if (ret < 0) {
-			log_err("MDP CAN DP write failed!\r\n");
+			log_err("HAL CAN (Display side) failed: %s\r\n", strerror(-ret));
 			error_handler();
 		}
 	} else if (ret < 0) {
-		log_err("MDP CAN PJB read failed!\r\n");
+		log_err("SPI CAN (PJB side) read failed: %s\r\n", strerror(-ret));
 		error_handler();
 	}
 }
@@ -339,6 +339,9 @@ void mdp_init(void)
 	while (true);
 #endif
 
+	pjb_can = mdp_get_can_spi_interface();
+	dp_can = mdp_get_can_hal_interface();
+
 	mdp_sysled_off();
 
 #if (MDP_BEEPER_ENABLED == 1)
@@ -351,13 +354,13 @@ void mdp_init(void)
 
 	ret = mdp_can_start(&dp_can);
 	if (ret) {
-		log_err("DP CAN (SPI) start failed!\r\n");
+		log_err("SPI CAN (PJB side) start failed!\r\n");
 		goto exit_error;
 	}
 
 	ret = mdp_can_start(&pjb_can);
 	if (ret) {
-		log_err("PJB CAN (HAL) start failed!\r\n");
+		log_err("HAL CAN (Display side) start failed!\r\n");
 		goto exit_error;
 	}
 
