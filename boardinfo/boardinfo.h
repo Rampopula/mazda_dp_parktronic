@@ -12,6 +12,8 @@
 
 #include "stm32f1xx_hal.h"
 
+#define MDP_CAN_TEST		0
+
 #ifndef MDP_APP_DEBUG
 #define MDP_APP_DEBUG		1
 #endif

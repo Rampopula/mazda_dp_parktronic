@@ -334,8 +334,10 @@ void mdp_init(void)
 
 	log_app_info();
 
-	dp_can = mdp_get_can_spi_interface();
-	pjb_can = mdp_get_can_hal_interface();
+#if (MDP_CAN_TEST == 1)
+	mdp_can_test();
+	while (true);
+#endif
 
 	mdp_sysled_off();
 

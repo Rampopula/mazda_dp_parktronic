@@ -79,4 +79,11 @@ void mdp_init(void);
  */
 void mdp_run(void);
 
+#if (MDP_CAN_TEST == 1)
+/**
+ * @brief Run Mazda Display Parktronic CAN bus test.
+ */
+void mdp_can_test(void);
+#endif
+
 #endif /* __MAZDA_DP_PARKTRONIC_H__ */
