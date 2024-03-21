@@ -19,13 +19,13 @@
 #ifdef STM32F103xB
 #include "stm32f1xx_hal.h"
 
-extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 #endif /* STM32F103xB */
 
 static inline bool mdp_intf_beeper_start(void)
 {
 #ifdef STM32F103xB
-	return HAL_TIM_OC_Start(&htim1, TIM_CHANNEL_2) == HAL_OK;
+	return HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1) == HAL_OK;
 #else
 	return false;
 #endif /* STM32F103xB */
@@ -34,7 +34,7 @@ static inline bool mdp_intf_beeper_start(void)
 static inline bool mdp_intf_beeper_stop(void)
 {
 #ifdef STM32F103xB
-	return HAL_TIM_OC_Stop(&htim1, TIM_CHANNEL_2) == HAL_OK;
+	return HAL_TIM_OC_Stop(&htim2, TIM_CHANNEL_1) == HAL_OK;
 #else
 	return false;
 #endif /* STM32F103xB */
@@ -51,7 +51,7 @@ static inline void mdp_intf_beeper_set_freq(uint32_t freq)
 	 *        2                             out_freq * 2
 	 */
 	uint32_t count_period = MDP_CLOCK_FREQ_HZ / (freq * 2);
-	__HAL_TIM_SET_AUTORELOAD(&htim1, count_period);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, count_period);
 #endif /* STM32F103xB */
 }
 

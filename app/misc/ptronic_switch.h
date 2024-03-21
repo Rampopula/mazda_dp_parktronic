@@ -15,7 +15,7 @@
 #include "stm32f1xx_hal.h"
 
 #define MDP_PTRONIC_EN_GPIO 	GPIOB
-#define MDP_PTRONIC_EN_PIN 	GPIO_PIN_14
+#define MDP_PTRONIC_EN_PIN 	GPIO_PIN_12 // PARK #1
 #define MDP_PTRONIC_EN_LEVEL 	GPIO_PIN_RESET
 
 static inline bool mdp_ptronic_is_enabled(void)
