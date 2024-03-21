@@ -63,7 +63,7 @@ static void error_handler(void)
 static void log_app_info(void)
 {
 	const char *line = "*****************************************";
-	const char *app_name = "Mazda Display Parktronic";
+	const char *app_name = "Mazda Display Parktronic v2";
 	const char *author = "by Eduard Chaika <rampopula@gmail.com>";
 
 	printf("\r\n\r\n");

@@ -13,6 +13,7 @@
 #include <stdio.h>
 
 #include "time.h"
+#include "boardinfo.h"
 
 #define LOG_LEVEL_ERROR	0
 #define LOG_LEVEL_SYS	0

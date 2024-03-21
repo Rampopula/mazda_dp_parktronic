@@ -13,17 +13,21 @@
 #include "stm32f1xx_hal.h"
 
 #ifndef MDP_APP_DEBUG
-#define MDP_APP_DEBUG		0
+#define MDP_APP_DEBUG		1
+#endif
+
+#if (MDP_APP_DEBUG == 1)
+#define LOG_LEVEL LOG_LEVEL_DEBUG
 #endif
 
 #define MDP_PTRONIC_F2616
 #define MDP_BEEPER_ENABLED	1
 
 #define MDP_OVERRIDE_GREETING	1
-#define MDP_GREETING_MESSAGE	"  MDP v0.2b "
+#define MDP_GREETING_MESSAGE	"  MDP v2.0b "
 
-#define MDP_APP_VERSION		"v0.2"
-#define MDP_BOARD_REVISION	"rev.01"
+#define MDP_APP_VERSION		"v1.0"
+#define MDP_BOARD_REVISION	"rev.02"
 #define MDP_BOARD_CHIP_NAME	"STM32F103C8T6"
 
 #define MDP_CLOCK_FREQ_HZ	HAL_RCC_GetHCLKFreq()
