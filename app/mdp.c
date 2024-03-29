@@ -17,7 +17,7 @@
 #define MDP_INIT_BEEP_DELAY	600	/* Beep time after parktronic on */
 #define MDP_ERROR_BLINK_DELAY	50	/* Error state blink delay msec */
 #define MDP_DISABLE_DELAY		200 /* Parktronic disable enable */
-#define MDP_HELLO_TIME			4000 /* Time for overwriting greeting message msec */
+#define MDP_HELLO_TIME			3500 /* Time for overwriting greeting message msec */
 
 #define MDP_DIST_BEEP_NONE	150	/* Distance in centimeters */
 #define MDP_DIST_BEEP_SLOW	90	/* Distance in centimeters */
@@ -324,11 +324,11 @@ static void mdp_can_transfer(bool replace)
 
 		ret = mdp_can_write(&dp_can);
 		if (ret < 0) {
-			log_err("HAL CAN (Display side) write failed: %s\r\n", strerror(-ret));
+			log_err("SPI CAN (Display side) write failed: %s\r\n", strerror(-ret));
 			error_handler();
 		}
 	} else if (ret < 0 && ret != -ENODATA) {
-		log_err("SPI CAN (PJB side) read failed: %s\r\n", strerror(-ret));
+		log_err("HAL CAN (PJB side) read failed: %s\r\n", strerror(-ret));
 		error_handler();
 	}
 }
@@ -348,8 +348,8 @@ void mdp_init(void)
 	while (true);
 #endif
 
-	pjb_can = mdp_get_can_spi_interface();
-	dp_can = mdp_get_can_hal_interface();
+	dp_can = mdp_get_can_spi_interface();
+	pjb_can = mdp_get_can_hal_interface();
 
 	mdp_sysled_off();
 
@@ -363,13 +363,13 @@ void mdp_init(void)
 
 	ret = mdp_can_start(&dp_can);
 	if (ret) {
-		log_err("HAL CAN (Display side) start failed!\r\n");
+		log_err("SPI CAN (Display side) start failed!\r\n");
 		goto exit_error;
 	}
 
 	ret = mdp_can_start(&pjb_can);
 	if (ret) {
-		log_err("SPI CAN (PJB side) start failed!\r\n");
+		log_err("HAL CAN (PJB side) start failed!\r\n");
 		goto exit_error;
 	}
 
