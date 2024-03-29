@@ -56,6 +56,7 @@ int mdp_can_spi_stop(void)
 int mdp_can_spi_read(uint32_t *msg_id, uint8_t *data, uint32_t *size)
 {
 	int ret = 0;
+	static int prev_ret = 0;
 	mcp2515_can_msg_t msg;
 
 	if (!msg_id || !data || !size) {
@@ -66,7 +67,10 @@ int mdp_can_spi_read(uint32_t *msg_id, uint8_t *data, uint32_t *size)
 
 	ret = mcp2515_rx_message(&msg);
 	if (ret) {
-		log_err("CAN read failed: %d\r\n", ret);
+		if (prev_ret != ret) {
+			log_err("CAN read failed: %d\r\n", ret);
+			prev_ret = ret;
+		}
 		return ret;
 	}
 

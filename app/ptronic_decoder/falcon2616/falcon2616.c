@@ -11,6 +11,7 @@
 #include "falcon2616_gpio_intf.h"
 #include "common.h"
 #include "time.h"
+#include "system_led.h"
 
 #include <string.h>
 
@@ -97,18 +98,20 @@ static void f2616_gpio_irq(void)
 	uint32_t bit_time;
 
 	/**
-         * If we read high level on GPIO, then we have rising edge,
-         * rising edge means start of data transfer.
+         * If we read low level on GPIO, then we have falling edge,
+         * falling edge means start of data transfer.
          */
-	if (read_gpio()) {
+	if (read_gpio() == GPIO_PIN_RESET) {
 		/* Begin to measure time and detect start bit */
+		mdp_sysled_on();
 		mdp_tm_measure_start(&tm);
 		read_frame = true;
 	/**
-         * If we read low level on GPIO,  then we have falling edge,
-         * falling edge means end of data transfer.
+         * If we read high level on GPIO,  then we have rising edge,
+         * rising edge means end of data transfer.
          */
 	} else if (read_frame) {
+		mdp_sysled_off();
 		/* Finish measuring time */
 		mdp_tm_measure_stop(&tm);
 		bit_time = mdp_tm_measure_get_us(&tm);

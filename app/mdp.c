@@ -5,6 +5,7 @@
 #include "ptronic_decoder.h"
 #include "ptronic_switch.h"
 #include "system_led.h"
+#include <errno.h>
 
 #ifdef MDP_MODULE
 #undef MDP_MODULE
@@ -15,6 +16,7 @@
 #define MDP_INIT_BLINK_DELAY	100	/* Init done blink delay msec */
 #define MDP_INIT_BEEP_DELAY	600	/* Beep time after parktronic on */
 #define MDP_ERROR_BLINK_DELAY	50	/* Error state blink delay msec */
+#define MDP_DISABLE_DELAY		200 /* Parktronic disable enable */
 
 #define MDP_DIST_BEEP_NONE	150	/* Distance in centimeters */
 #define MDP_DIST_BEEP_SLOW	90	/* Distance in centimeters */
@@ -319,10 +321,10 @@ static void mdp_can_transfer(bool replace)
 
 		ret = mdp_can_write(&dp_can);
 		if (ret < 0) {
-			log_err("HAL CAN (Display side) failed: %s\r\n", strerror(-ret));
+			log_err("HAL CAN (Display side) write failed: %s\r\n", strerror(-ret));
 			error_handler();
 		}
-	} else if (ret < 0) {
+	} else if (ret < 0 && ret != -ENODATA) {
 		log_err("SPI CAN (PJB side) read failed: %s\r\n", strerror(-ret));
 		error_handler();
 	}
@@ -354,13 +356,13 @@ void mdp_init(void)
 
 	ret = mdp_can_start(&dp_can);
 	if (ret) {
-		log_err("SPI CAN (PJB side) start failed!\r\n");
+		log_err("HAL CAN (Display side) start failed!\r\n");
 		goto exit_error;
 	}
 
 	ret = mdp_can_start(&pjb_can);
 	if (ret) {
-		log_err("HAL CAN (Display side) start failed!\r\n");
+		log_err("SPI CAN (PJB side) start failed!\r\n");
 		goto exit_error;
 	}
 
@@ -378,14 +380,24 @@ void mdp_run(void)
 	char dist_str[MAZDA_DP_CHAR_NUM * 2];
 	struct ptronic_data *data;
 
+#if (MDP_PTRONIC_TEST == 1)
+	const int print_interval = 500; /* msec */
+	static struct mdp_timestamp print_ts;
+	uint8_t ptronic_state = mdp_ptronic_is_enabled() ? 0x02 : 0x00;
+	state_updated = get_bit_state_updated(ptronic_state, MAZDA_STAT_RGEAR_BIT,
+						&rgear_state);
+#else
 	mdp_can_transfer(rgear_state.curr);
 
 	state_updated = get_bit_state_updated(mazda_stat, MAZDA_STAT_RGEAR_BIT,
 					      &rgear_state);
+#endif
 	if (state_updated) {
 		if (rgear_state.curr) {
 			log_sys("Parktronic enabled!\r\n");
-
+#if (MDP_PTRONIC_TEST == 1)
+			print_ts = MDP_TIMESTAMP;
+#endif
 			mdp_beeper_set_mode(MDP_BEEP_CONST);
 			mdp_beeper_beep();
 
@@ -398,17 +410,19 @@ void mdp_run(void)
 
 			mdp_beeper_set_mode(MDP_BEEP_NONE);
 			mdp_beeper_beep();
+			mdp_tm_msleep(MDP_DISABLE_DELAY);
 		}
 	}
 
 	if (rgear_state.curr) {
+#if (MDP_PTRONIC_TEST == 0)
 		if (!mdp_ptronic_is_enabled()) {
 			/* Reverse gear detected but parktronic turned off */
 			update_display(MDP_PARK_ERR_STR);
 			log_err("Parktronic signal not detected!\r\n");
 			return;
 		}
-
+#endif
 		data = ptronic_read_data();
 
 		mdp_beeper_set_mode(distance_to_beep(data));
@@ -416,5 +430,21 @@ void mdp_run(void)
 
 		distance_to_string(data, dist_str);
 		update_display(dist_str);
+#if (MDP_PTRONIC_TEST == 1)
+		if (mdp_tm_elapsed(&print_ts, print_interval)) {
+			for (int i = 0; i < strlen(dist_str); i++) {
+				if (dist_str[i] == '\xF0') {
+					dist_str[i] = '>';
+				} else if (dist_str[i] == '\xF1') {
+					dist_str[i] = '<';
+				}else if (dist_str[i] == '\x3E') {
+					dist_str[i] = '-';
+				}else if (dist_str[i] == '\x3C') {
+					dist_str[i] = '-';
+				}
+			}
+			log_sys("%s\r\n", dist_str);
+		}
+#endif
 	}
 }
