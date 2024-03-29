@@ -21,9 +21,7 @@ int mdp_can_spi_start(void)
 	int ret = 0;
 
 	/* Acceptance Mask of RXB0 and RXB1 receive buffers */
-	mcp2515_rx_filter_t filter = {
-		.mask = { 0x0, 0x0, 0x0, 0x0 },
-	};
+	mcp2515_rx_filter_t filter = { 0 };
 
 	ret = mcp2515_init(MCP2515_FOSC_8MHZ, MCP2515_SPEED_125KBPS);
 	if (ret) {
