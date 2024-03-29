@@ -17,6 +17,7 @@
 #define MDP_INIT_BEEP_DELAY	600	/* Beep time after parktronic on */
 #define MDP_ERROR_BLINK_DELAY	50	/* Error state blink delay msec */
 #define MDP_DISABLE_DELAY		200 /* Parktronic disable enable */
+#define MDP_HELLO_TIME			4000 /* Time for overwriting greeting message msec */
 
 #define MDP_DIST_BEEP_NONE	150	/* Distance in centimeters */
 #define MDP_DIST_BEEP_SLOW	90	/* Distance in centimeters */
@@ -50,7 +51,8 @@ static const char *dist_steps[] = MDP_STEP_STR;
 static uint8_t mdp_buffer[MAZDA_DP_REG_NUM][MAZDA_DP_MSG_SIZE];
 
 #if (MDP_OVERRIDE_GREETING == 1)
-static bool greetin_replace;
+static bool greetin_replace = true;
+static struct mdp_timestamp greetin_ts;
 #endif
 
 static void app_error_blink();
@@ -302,11 +304,12 @@ static void mdp_can_transfer(bool replace)
 			mazda_stat = pjb_can.msg.data[MAZDA_STAT_RGEAR_BYTE];
 
 #if (MDP_OVERRIDE_GREETING == 1)
-		if (pjb_can.msg.id == MAZDA_DP_MISC_SYMB_ID) {
-			greetin_replace = pjb_can.msg.data[MAZDA_DP_MISC_SYMB2];
-			greetin_replace &= BIT(MAZDA_DP_MISC_INIT_BIT);
-			if (greetin_replace)
+		if (greetin_replace) {
+			if (mdp_tm_elapsed(&greetin_ts, MDP_HELLO_TIME)) {
+				greetin_replace = false;
+			} else {
 				update_display(MDP_GREETING_MESSAGE);
+			}
 		}
 #endif
 		if (replace || greetin_replace) {
@@ -333,6 +336,10 @@ static void mdp_can_transfer(bool replace)
 void mdp_init(void)
 {
 	int ret;
+
+#if (MDP_OVERRIDE_GREETING == 1)
+	greetin_ts = MDP_TIMESTAMP;
+#endif
 
 	log_app_info();
 
