@@ -60,9 +60,14 @@
 #define F2616_SNS_C	2
 #define F2616_SNS_D	1
 
+struct sns_info {
+	bool valid;
+	uint32_t cm;
+};
+
 struct f2616_distance {
-	bool valid_data;
-	uint32_t cm[F2616_SNS_CNT];
+	bool flow_exists;
+	struct sns_info sns[F2616_SNS_CNT];
 };
 
 bool f2616_ready(void);

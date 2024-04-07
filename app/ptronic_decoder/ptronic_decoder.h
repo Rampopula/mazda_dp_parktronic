@@ -34,8 +34,8 @@
 #endif
 
 struct ptronic_data {
-	bool valid;
-	uint32_t distance[MDP_SENSOR_CNT]; /* Distance in centimeters */
+	bool flow_exists;
+	struct sns_info sns[F2616_SNS_CNT];
 };
 
 static inline bool ptronic_ready(void)

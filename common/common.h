@@ -11,6 +11,7 @@
 #define __MDP_COMMON_H__
 
 #define BIT(x)			(1 << x)
+#define _SET_BIT(byte, bit)		(byte |= BIT(bit))
 #define RESET_BIT(byte, bit)	(byte &= ~(BIT(bit)))
 
 #define MAX(x, y)		(((x) > (y)) ? (x) : (y))

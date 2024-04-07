@@ -18,7 +18,7 @@
 #define read_gpio()		f2616_intf_gpio_read()
 
 #define F2616_SNS_OK		1
-#define F2616_SNS_INVAL		0x80000000
+#define F2616_SNS_NO_DATA	0x80000000
 
 #define F2616_SNS_ID_BIT	8
 #define F2616_SNS_STAT_BIT	10
@@ -74,8 +74,10 @@ static void f2616_convert_distance(uint16_t data)
 {
 	uint8_t idx = F2616_GET_SNS(data), distance = data;
 
+	ptronic_ready |= 1 << idx;
+
 	if (F2616_GET_SNS_STAT(data) != F2616_SNS_OK) {
-		distance_cm[idx] |= F2616_SNS_INVAL;
+		distance_cm[idx] = F2616_SNS_NO_DATA;
 		return;
 	}
 
@@ -87,10 +89,6 @@ static void f2616_convert_distance(uint16_t data)
 		distance_cm[idx] = (F2616_DIST_1p0m - distance) * 10 + 100;
 	else if (IN_RANGE(distance, F2616_DIST_2p5m, F2616_DIST_2p0m))
 		distance_cm[idx] = (F2616_DIST_2p0m - distance) * 10 + 200;
-	else
-		return;
-
-	ptronic_ready |= 1 << idx;
 }
 
 static void f2616_gpio_irq(void)
@@ -111,7 +109,6 @@ static void f2616_gpio_irq(void)
          * rising edge means end of data transfer.
          */
 	} else if (read_frame) {
-		mdp_sysled_off();
 		/* Finish measuring time */
 		mdp_tm_measure_stop(&tm);
 		bit_time = mdp_tm_measure_get_us(&tm);
@@ -133,6 +130,7 @@ static void f2616_gpio_irq(void)
 
 			/* If we read all bits from the frame */
 			if (read_data == PTRONIC_FRAME_SIZE + 1) {
+				mdp_sysled_off();
 				f2616_convert_distance(frame);
 				frame = 0;
 				read_data = false;
@@ -148,19 +146,10 @@ bool f2616_ready(void)
 
 struct f2616_distance *f2616_read_distance(void)
 {
-	if (distance_cm[F2616_SNS_A] & F2616_SNS_INVAL &&
-	    distance_cm[F2616_SNS_B] & F2616_SNS_INVAL &&
-	    distance_cm[F2616_SNS_C] & F2616_SNS_INVAL &&
-	    distance_cm[F2616_SNS_D] & F2616_SNS_INVAL) {
-		f2616_distance.valid_data = false;
-		return &f2616_distance;
+	for (int i = 0; i < F2616_SNS_CNT; i++) {
+		f2616_distance.sns[i].valid = (distance_cm[i] != F2616_SNS_NO_DATA);
+		f2616_distance.sns[i].cm = f2616_distance.sns[i].valid ? distance_cm[i] : 0xffffffff;
 	}
-
-	f2616_distance.valid_data = true;
-	f2616_distance.cm[F2616_SNS_A] = distance_cm[F2616_SNS_A];
-	f2616_distance.cm[F2616_SNS_B] = distance_cm[F2616_SNS_B];
-	f2616_distance.cm[F2616_SNS_C] = distance_cm[F2616_SNS_C];
-	f2616_distance.cm[F2616_SNS_D] = distance_cm[F2616_SNS_D];
 
 	return &f2616_distance;
 }

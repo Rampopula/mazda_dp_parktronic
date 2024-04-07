@@ -17,7 +17,7 @@
 #define MDP_INIT_BEEP_DELAY	600	/* Beep time after parktronic on */
 #define MDP_ERROR_BLINK_DELAY	50	/* Error state blink delay msec */
 #define MDP_DISABLE_DELAY		200 /* Parktronic disable enable */
-#define MDP_HELLO_TIME			3500 /* Time for overwriting greeting message msec */
+#define MDP_HELLO_TIME			2500 /* Time for overwriting greeting message msec */
 
 #define MDP_DIST_BEEP_NONE	150	/* Distance in centimeters */
 #define MDP_DIST_BEEP_SLOW	90	/* Distance in centimeters */
@@ -25,6 +25,7 @@
 
 #define MDP_MAGIC_SLEEP_MS	1	/* Fixes display flickering */
 
+#define MDP_PARK_ERR_SNS	" A%c B%c C%c D%c"
 #define MDP_PARK_ERR_STR	"    ERRm    "
 #define MDP_NO_DATA_STR		"    -.-m    "
 #define MDP_DATA_TMPL_STR	"    %u.%um    "
@@ -37,6 +38,7 @@
 		"\xF0\xF0\x3E ",    "\xF0\xF0  ",       "\xF0\x3E  ",		\
 		"\xF0   ",          "\x3E   ",          "\x3E   "		\
 	}
+#define MDP_SNS_ERR_TO_STR(sns)	((sns_err & (1 << sns)) ? '-' : '+')
 
 struct mdp_state {
 	uint32_t curr;
@@ -46,6 +48,10 @@ struct mdp_state {
 static uint8_t mazda_stat;
 static struct mdp_state rgear_state;
 static struct mdp_can dp_can, pjb_can;
+
+static bool sns_err_print;
+static uint8_t sns_err;
+static struct mdp_timestamp sns_err_ts;
 
 static const char *dist_steps[] = MDP_STEP_STR;
 static uint8_t mdp_buffer[MAZDA_DP_REG_NUM][MAZDA_DP_MSG_SIZE];
@@ -137,27 +143,71 @@ static void update_display(char *string)
 
 static void distance_to_string(struct ptronic_data *ptronic, char *string)
 {
+	const int err_print_time = 2000; /* msec */
 	const uint32_t dist_step = MDP_STEP;
 	const uint32_t l_flag = 0x80000000, r_flag = 0x00008000;
-	uint16_t main_dist, left_dist, right_dist;
+	uint16_t common_dist, left_dist, right_dist;
 	uint32_t dist_flag = 0;
 
 	/* No data from sensors */
-	if (!ptronic->valid) {
+	if (!ptronic_ready()) {
 		sprintf(string, MDP_NO_DATA_STR);
 		return;
 	}
 
 	/* Get minimum distance for left and right halfs */
-	left_dist = MIN(ptronic->distance[MDP_SENSOR_A],
-			ptronic->distance[MDP_SENSOR_B]);
-	right_dist = MIN(ptronic->distance[MDP_SENSOR_C],
-			 ptronic->distance[MDP_SENSOR_D]);
-	main_dist = MIN(left_dist, right_dist);
+	if (ptronic->sns[MDP_SENSOR_A].valid && ptronic->sns[MDP_SENSOR_B].valid) {
+		left_dist = MIN(ptronic->sns[MDP_SENSOR_A].cm, ptronic->sns[MDP_SENSOR_B].cm);
+	} else if (ptronic->sns[MDP_SENSOR_A].valid && !ptronic->sns[MDP_SENSOR_B].valid) {
+		left_dist = ptronic->sns[MDP_SENSOR_A].cm;
+		RESET_BIT(sns_err, MDP_SENSOR_A);
+		_SET_BIT(sns_err, MDP_SENSOR_B);
+	} else if (!ptronic->sns[MDP_SENSOR_A].valid && ptronic->sns[MDP_SENSOR_B].valid) {
+		left_dist = ptronic->sns[MDP_SENSOR_B].cm;
+		RESET_BIT(sns_err, MDP_SENSOR_B);
+		_SET_BIT(sns_err, MDP_SENSOR_A);
+	} else {
+		left_dist = UINT16_MAX;
+		_SET_BIT(sns_err, MDP_SENSOR_A);
+		_SET_BIT(sns_err, MDP_SENSOR_B);
+	}
+
+	if (ptronic->sns[MDP_SENSOR_C].valid && ptronic->sns[MDP_SENSOR_D].valid) {
+		right_dist = MIN(ptronic->sns[MDP_SENSOR_C].cm, ptronic->sns[MDP_SENSOR_D].cm);
+	} else if (ptronic->sns[MDP_SENSOR_C].valid && !ptronic->sns[MDP_SENSOR_D].valid) {
+		right_dist = ptronic->sns[MDP_SENSOR_C].cm;
+		RESET_BIT(sns_err, MDP_SENSOR_C);
+		_SET_BIT(sns_err, MDP_SENSOR_D);
+	} else if (!ptronic->sns[MDP_SENSOR_C].valid && ptronic->sns[MDP_SENSOR_D].valid) {
+		right_dist = ptronic->sns[MDP_SENSOR_D].cm;
+		RESET_BIT(sns_err, MDP_SENSOR_D);
+		_SET_BIT(sns_err, MDP_SENSOR_C);
+	} else {
+		right_dist = UINT16_MAX;
+		_SET_BIT(sns_err, MDP_SENSOR_C);
+		_SET_BIT(sns_err, MDP_SENSOR_D);
+	}
+
+	/* Display sensor error message */
+	if (sns_err_print && sns_err) {
+		if (mdp_tm_elapsed(&sns_err_ts, err_print_time)) {
+			sns_err_print = false;
+			goto skip_err_print;
+		}
+
+		sprintf(string, MDP_PARK_ERR_SNS, MDP_SNS_ERR_TO_STR(MDP_SENSOR_A),
+										  MDP_SNS_ERR_TO_STR(MDP_SENSOR_B),
+										  MDP_SNS_ERR_TO_STR(MDP_SENSOR_C),
+										  MDP_SNS_ERR_TO_STR(MDP_SENSOR_D));
+		return;
+	}
+
+skip_err_print:
+	common_dist = MIN(left_dist, right_dist);
 
 	/* Write distance in meters */
-	sprintf(string, MDP_DATA_TMPL_STR, (main_dist / 100),
-		(main_dist % 100) / 10);
+	sprintf(string, MDP_DATA_TMPL_STR, (common_dist / 100),
+		(common_dist % 100) / 10);
 
 	/* Write arrows for the left and right halfs of the display */
 	for (int i = 0; i < MDP_STEP_CNT; ++i) {
@@ -193,26 +243,41 @@ static void distance_to_string(struct ptronic_data *ptronic, char *string)
 
 static mdp_beep_mode_t distance_to_beep(struct ptronic_data *ptronic)
 {
-	uint16_t main_dist, left_dist, right_dist;
+	uint16_t common_dist, left_dist, right_dist;
 
-	/* No data from sensors */
-	if (!ptronic->valid)
+	if (!ptronic_ready())
 		return MDP_BEEP_NONE;
 
 	/* Get minimum distance for left and right halfs */
-	left_dist = MIN(ptronic->distance[MDP_SENSOR_A],
-			ptronic->distance[MDP_SENSOR_B]);
-	right_dist = MIN(ptronic->distance[MDP_SENSOR_C],
-			 ptronic->distance[MDP_SENSOR_D]);
-	main_dist = MIN(left_dist, right_dist);
+	if (ptronic->sns[MDP_SENSOR_A].valid && ptronic->sns[MDP_SENSOR_B].valid) {
+		left_dist = MIN(ptronic->sns[MDP_SENSOR_A].cm, ptronic->sns[MDP_SENSOR_B].cm);
+	} else if (ptronic->sns[MDP_SENSOR_A].valid && !ptronic->sns[MDP_SENSOR_B].valid) {
+		left_dist = ptronic->sns[MDP_SENSOR_A].cm;
+	} else if (!ptronic->sns[MDP_SENSOR_A].valid && ptronic->sns[MDP_SENSOR_B].valid) {
+		left_dist = ptronic->sns[MDP_SENSOR_B].cm;
+	} else {
+		left_dist = UINT16_MAX;
+	}
 
-	if (main_dist >= MDP_DIST_BEEP_NONE) {
+	if (ptronic->sns[MDP_SENSOR_C].valid && ptronic->sns[MDP_SENSOR_D].valid) {
+		right_dist = MIN(ptronic->sns[MDP_SENSOR_C].cm, ptronic->sns[MDP_SENSOR_D].cm);
+	} else if (ptronic->sns[MDP_SENSOR_C].valid && !ptronic->sns[MDP_SENSOR_D].valid) {
+		right_dist = ptronic->sns[MDP_SENSOR_C].cm;
+	} else if (!ptronic->sns[MDP_SENSOR_C].valid && ptronic->sns[MDP_SENSOR_D].valid) {
+		right_dist = ptronic->sns[MDP_SENSOR_D].cm;
+	} else {
+		right_dist = UINT16_MAX;
+	}
+
+	common_dist = MIN(left_dist, right_dist);
+
+	if (common_dist >= MDP_DIST_BEEP_NONE) {
 		return MDP_BEEP_NONE;
-	} else if (main_dist < MDP_DIST_BEEP_NONE &&
-		   main_dist >= MDP_DIST_BEEP_SLOW) {
+	} else if (common_dist < MDP_DIST_BEEP_NONE &&
+		   common_dist >= MDP_DIST_BEEP_SLOW) {
 		return MDP_BEEP_SLOW;
-	} else if (main_dist < MDP_DIST_BEEP_SLOW &&
-		   main_dist >= MDP_DIST_BEEP_FAST) {
+	} else if (common_dist < MDP_DIST_BEEP_SLOW &&
+		   common_dist >= MDP_DIST_BEEP_FAST) {
 		return MDP_BEEP_FAST;
 	}
 
@@ -444,9 +509,9 @@ void mdp_run(void)
 					dist_str[i] = '>';
 				} else if (dist_str[i] == '\xF1') {
 					dist_str[i] = '<';
-				}else if (dist_str[i] == '\x3E') {
+				} else if (dist_str[i] == '\x3E') {
 					dist_str[i] = '-';
-				}else if (dist_str[i] == '\x3C') {
+				} else if (dist_str[i] == '\x3C') {
 					dist_str[i] = '-';
 				}
 			}
