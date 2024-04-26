@@ -143,7 +143,7 @@ static void update_display(char *string)
 
 static void distance_to_string(struct ptronic_data *ptronic, char *string)
 {
-	const int err_print_time = 2000; /* msec */
+	const int err_print_time = 3000; /* msec */
 	const uint32_t dist_step = MDP_STEP;
 	const uint32_t l_flag = 0x80000000, r_flag = 0x00008000;
 	uint16_t common_dist, left_dist, right_dist;
@@ -192,7 +192,7 @@ static void distance_to_string(struct ptronic_data *ptronic, char *string)
 	if (sns_err_print && sns_err) {
 		if (mdp_tm_elapsed(&sns_err_ts, err_print_time)) {
 			sns_err_print = false;
-			goto skip_err_print;
+			goto display_data;
 		}
 
 		sprintf(string, MDP_PARK_ERR_SNS, MDP_SNS_ERR_TO_STR(MDP_SENSOR_A),
@@ -202,8 +202,17 @@ static void distance_to_string(struct ptronic_data *ptronic, char *string)
 		return;
 	}
 
-skip_err_print:
-	common_dist = MIN(left_dist, right_dist);
+display_data:
+	if (left_dist != UINT16_MAX && right_dist != UINT16_MAX)
+		common_dist = MIN(left_dist, right_dist);
+	else if (left_dist != UINT16_MAX && right_dist == UINT16_MAX)
+		common_dist = left_dist;
+	else if (left_dist == UINT16_MAX && right_dist != UINT16_MAX)
+		common_dist = right_dist;
+	else {
+		sprintf(string, MDP_PARK_ERR_STR);
+		return;
+	}
 
 	/* Write distance in meters */
 	sprintf(string, MDP_DATA_TMPL_STR, (common_dist / 100),
