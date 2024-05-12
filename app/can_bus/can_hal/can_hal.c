@@ -9,7 +9,7 @@
 #endif
 #define MDP_MODULE "can_hal"
 
-#define MDP_HAL_CAN_MIN_MSG_LEN	8
+#define MDP_HAL_CAN_MIN_MSG_LEN	1
 #define MDP_HAL_CAN_MAX_MSG_LEN	8
 
 int mdp_can_hal_start(void)

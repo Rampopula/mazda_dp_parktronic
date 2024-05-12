@@ -405,6 +405,21 @@ static void mdp_can_transfer(bool replace)
 		log_err("HAL CAN (PJB side) read failed: %s\r\n", strerror(-ret));
 		error_handler();
 	}
+
+	ret = mdp_can_read(&dp_can);
+	if (ret == 0 && dp_can.msg.size != 0) {
+		memcpy(&pjb_can.msg, &dp_can.msg, sizeof(dp_can.msg));
+
+		/* Magic sleep */
+		mdp_tm_msleep(MDP_MAGIC_SLEEP_MS);
+
+		ret = mdp_can_write(&pjb_can);
+		if (ret < 0) {
+			log_err("HAL CAN (PJB side) write failed: %s\r\n", strerror(-ret));
+		}
+	} else if (ret < 0 && ret != -ENODATA) {
+		log_err("SPI CAN (Display side) read failed: %s\r\n", strerror(-ret));
+	}
 }
 
 void mdp_init(void)
