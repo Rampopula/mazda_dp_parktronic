@@ -179,7 +179,7 @@ static void distance_to_string(struct ptronic_data *ptronic, char *string)
 	else if (left_dist == UINT16_MAX && right_dist != UINT16_MAX)
 		common_dist = right_dist;
 	else {
-		sprintf(string, MDP_PARK_ERR_STR);
+		sprintf(string, MDP_NO_DATA_STR);
 		return;
 	}
 
@@ -476,7 +476,7 @@ void mdp_run(void)
 	}
 
 	if (rgear_state.curr) {
-#if (MDP_PTRONIC_TEST == 0)
+#if (MDP_PTRONIC_TEST == 1)
 		if (!mdp_ptronic_is_enabled()) {
 			/* Reverse gear detected but parktronic turned off */
 			update_display(MDP_PARK_ERR_STR);
