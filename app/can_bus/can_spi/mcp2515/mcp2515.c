@@ -461,6 +461,18 @@ int mcp2515_check_passive_tx_error(void)
 	return byte & MCP2515_ERR_TXEP;
 }
 
+int mcp2515_get_tx_error_counter(void)
+{
+	int ret = EOK;
+	uint8_t byte = 0;
+
+	ret = mcp2515_read_byte(MCP2515_TEC, &byte);
+	if (ret != EOK)
+		return ret;
+
+	return byte;
+}
+
 int mcp2515_tx_message(mcp2515_tx_buf_t tx_buf, mcp2515_can_msg_t *tx_msg)
 {
 	int ret = EOK;
@@ -551,7 +563,9 @@ int mcp2515_rx_message(mcp2515_can_msg_t *rx_msg)
 
 	/* If there is no messages in RX buffers */
 	if (!rx_status.rx_buffer)
-		return -ENODATA;
+		return EOK;
+
+	memset((void *)&rx_regs, 0, sizeof(rx_regs));
 
 	if (rx_status.rx_buffer == MCP2515_MSG_RXB0 ||
 	    rx_status.rx_buffer == MCP2515_MSG_BOTH) {
@@ -566,6 +580,9 @@ int mcp2515_rx_message(mcp2515_can_msg_t *rx_msg)
 
 	if (ret != EOK)
 		return ret;
+
+	if (rx_regs.dlc > CAN_MSG_MAX_SIZE)
+		rx_regs.dlc = 0;
 
 	rx_msg->id_type = rx_status.msg_type;
 	rx_msg->id = mcp2515_reg_to_canid(rx_msg->id_type, &rx_regs);

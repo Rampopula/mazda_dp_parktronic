@@ -3,6 +3,7 @@
 #include "log.h"
 
 #include <errno.h>
+#include <string.h>
 
 #ifdef MDP_MODULE
 #undef MDP_MODULE
@@ -69,16 +70,21 @@ int mdp_can_hal_read(uint32_t *msg_id, uint8_t *data, uint32_t *size)
 	if (!HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0))
 		return 0;
 
+	memset((void *)&rx_header, 0, sizeof(rx_header));
+
 	ret = HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rx_header, data);
 	if (ret) {
 		log_err("CAN read failed: 0x%lx\r\n", hcan.ErrorCode);
 		return -EFAULT;
 	}
 
+	if (rx_header.DLC > MDP_HAL_CAN_MAX_MSG_LEN)
+		rx_header.DLC = 0;
+
 	*msg_id = rx_header.StdId;
 	*size = rx_header.DLC;
 
-	return *size;
+	return ret;
 }
 
 int mdp_can_hal_write(uint32_t msg_id, uint8_t *data, uint32_t size)
@@ -90,7 +96,7 @@ int mdp_can_hal_write(uint32_t msg_id, uint8_t *data, uint32_t size)
 		.TransmitGlobalTime = DISABLE
 	};
 	int ret = 0;
-	uint32_t tx_mailbox;
+	static uint32_t tx_mailbox;
 
 	if (!data) {
 		log_err("Invalid pointer!\r\n");
@@ -111,5 +117,5 @@ int mdp_can_hal_write(uint32_t msg_id, uint8_t *data, uint32_t size)
 		return -EFAULT;
 	}
 
-	return size;
+	return ret;
 }

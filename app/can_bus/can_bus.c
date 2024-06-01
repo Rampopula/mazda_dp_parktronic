@@ -35,19 +35,13 @@ int mdp_can_stop(struct mdp_can *can)
 
 int mdp_can_read(struct mdp_can *can)
 {
-	int ret = 0;
-
 	if (!can || !can->ops.read) {
 		log_err("Invalid arguments: can = %p, ops.read = %p\r\n",
 			can, can->ops.read);
 		return -EINVAL;
 	}
 
-	ret = can->ops.read(&can->msg.id, can->msg.data, &can->msg.size);
-	if (ret <= 0)
-		return ret;
-
-	return ret;
+	return can->ops.read(&can->msg.id, can->msg.data, &can->msg.size);
 }
 
 int mdp_can_write(struct mdp_can *can)

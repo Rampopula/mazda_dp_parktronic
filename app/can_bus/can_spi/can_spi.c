@@ -54,7 +54,6 @@ int mdp_can_spi_stop(void)
 int mdp_can_spi_read(uint32_t *msg_id, uint8_t *data, uint32_t *size)
 {
 	int ret = 0;
-	static int prev_ret = 0;
 	mcp2515_can_msg_t msg;
 
 	if (!msg_id || !data || !size) {
@@ -63,12 +62,11 @@ int mdp_can_spi_read(uint32_t *msg_id, uint8_t *data, uint32_t *size)
 		return -EINVAL;
 	}
 
+	memset((void *)&msg, 0, sizeof(msg));
+
 	ret = mcp2515_rx_message(&msg);
 	if (ret) {
-		if (prev_ret != ret) {
-			log_err("CAN read failed: %d\r\n", ret);
-			prev_ret = ret;
-		}
+		log_err("CAN read failed: %d\r\n", ret);
 		return ret;
 	}
 
@@ -94,6 +92,13 @@ int mdp_can_spi_write(uint32_t msg_id, uint8_t *data, uint32_t size)
 	msg.id_type = MCP2515_MSG_STD_DATA;
 	msg.size = size;
 	memcpy(msg.data, data, size);
+
+	if (mcp2515_check_passive_tx_error()) {
+		log_sys("SPI CAN Passive TX error (TEC: %d), reset chip\r\n",
+				mcp2515_get_tx_error_counter());
+		mcp2515_reset();
+		mdp_can_spi_start();
+	}
 
 	ret = mcp2515_tx_message(MCP2515_TX_BUF_AUTO, &msg);
 	if (ret)

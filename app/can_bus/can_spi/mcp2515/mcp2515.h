@@ -226,6 +226,16 @@ int mcp2515_check_passive_tx_error(void);
 int mcp2515_check_passive_rx_error(void);
 
 /**
+ * @brief  Get transmission error counter.
+ *
+ * @return the number of tx errors
+ *
+ *         NOTE: For more detail information about errors please refer to
+ *               MCP2515 datasheet, page 47-49.
+ */
+int mcp2515_get_tx_error_counter(void);
+
+/**
  * @brief  Transmit CAN Bus message.
  *
  * @param  [in] tx_buf MCP2515 transmit buffer ID.

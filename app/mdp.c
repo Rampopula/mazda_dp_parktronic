@@ -12,6 +12,8 @@
 #endif
 #define MDP_MODULE		"mdp_app"
 
+#define MDP_EOK				0
+
 #define MDP_BEEP_FREQ		2755
 #define MDP_INIT_BLINK_DELAY	100	/* Init done blink delay msec */
 #define MDP_INIT_BEEP_DELAY	600	/* Beep time after parktronic on */
@@ -341,8 +343,10 @@ static void mdp_can_transfer(bool replace)
 {
 	int ret;
 
+	pjb_can.msg.size = 0;
+
 	ret = mdp_can_read(&pjb_can);
-	if (ret > 0) {
+	if (ret == MDP_EOK && pjb_can.msg.size) {
 		if (pjb_can.msg.id == MAZDA_STAT_ID)
 			mazda_stat = pjb_can.msg.data[MAZDA_STAT_RGEAR_BYTE];
 
@@ -366,27 +370,27 @@ static void mdp_can_transfer(bool replace)
 		mdp_tm_msleep(MDP_MAGIC_SLEEP_MS);
 
 		ret = mdp_can_write(&dp_can);
-		if (ret < 0) {
+		if (ret != MDP_EOK) {
 			log_err("SPI CAN (Display side) write failed: %s\r\n", strerror(-ret));
-			error_handler();
 		}
-	} else if (ret < 0 && ret != -ENODATA) {
+	} else if (ret != MDP_EOK) {
 		log_err("HAL CAN (PJB side) read failed: %s\r\n", strerror(-ret));
-		error_handler();
 	}
 
+	dp_can.msg.size = 0;
+
 	ret = mdp_can_read(&dp_can);
-	if (ret == 0 && dp_can.msg.size != 0) {
-		memcpy(&pjb_can.msg, &dp_can.msg, sizeof(dp_can.msg));
+	if (ret == MDP_EOK && dp_can.msg.size) {
+		memcpy(&pjb_can.msg, &dp_can.msg, sizeof(pjb_can.msg));
 
 		/* Magic sleep */
 		mdp_tm_msleep(MDP_MAGIC_SLEEP_MS);
 
 		ret = mdp_can_write(&pjb_can);
-		if (ret < 0) {
+		if (ret != MDP_EOK) {
 			log_err("HAL CAN (PJB side) write failed: %s\r\n", strerror(-ret));
 		}
-	} else if (ret < 0 && ret != -ENODATA) {
+	} else if (ret != MDP_EOK) {
 		log_err("SPI CAN (Display side) read failed: %s\r\n", strerror(-ret));
 	}
 }
