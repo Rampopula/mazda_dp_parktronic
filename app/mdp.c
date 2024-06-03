@@ -14,31 +14,29 @@
 
 #define MDP_EOK				0
 
-#define MDP_BEEP_FREQ		2755
+#define MDP_BEEP_FREQ			2755
 #define MDP_INIT_BLINK_DELAY	100	/* Init done blink delay msec */
-#define MDP_INIT_BEEP_DELAY	600	/* Beep time after parktronic on */
+#define MDP_INIT_BEEP_DELAY		500	/* Beep time after parktronic on */
 #define MDP_ERROR_BLINK_DELAY	50	/* Error state blink delay msec */
 #define MDP_DISABLE_DELAY		200 /* Parktronic disable enable */
 #define MDP_HELLO_TIME			2500 /* Time for overwriting greeting message msec */
 
-#define MDP_DIST_BEEP_NONE	150	/* Distance in centimeters */
-#define MDP_DIST_BEEP_SLOW	90	/* Distance in centimeters */
-#define MDP_DIST_BEEP_FAST	30	/* Distance in centimeters */
+#define MDP_DIST_BEEP_NONE		150	/* Distance in centimeters */
+#define MDP_DIST_BEEP_SLOW		90	/* Distance in centimeters */
+#define MDP_DIST_BEEP_FAST		30	/* Distance in centimeters */
 
-#define MDP_MAGIC_SLEEP_MS	1	/* Fixes display flickering */
+#define MDP_MAGIC_SLEEP_MS		1	/* Fixes display flickering */
 
-#define MDP_PARK_ERR_SNS	" A%c B%c C%c D%c"
-#define MDP_PARK_ERR_STR	"    ERRm    "
-#define MDP_NO_DATA_STR		"    -.-m    "
-#define MDP_DATA_TMPL_STR	"    %u.%um    "
-#define MDP_STEP		30
-#define MDP_STEP_CNT		9
-#define MDP_STEP_STRLEN		4
-#define MDP_STEP_STR								\
+#define MDP_NO_DATA_STR			"    -.-m    "
+#define MDP_DATA_TMPL_STR		"    %u.%um    "
+#define MDP_STEP				30
+#define MDP_STEP_CNT			9
+#define MDP_STEP_STRLEN			4
+#define MDP_STEP_STR												\
 	{									\
 		"\xF0\xF0\xF0\xF0", "\xF0\xF0\xF0\x3E", "\xF0\xF0\xF0 ",	\
 		"\xF0\xF0\x3E ",    "\xF0\xF0  ",       "\xF0\x3E  ",		\
-		"\xF0   ",          "\x3E   ",          "\x3E   "		\
+		"\xF0   ",          "\x3E   ",          "\x3E   "			\
 	}
 
 struct mdp_state {
@@ -61,13 +59,6 @@ static bool greetin_replace;
 #endif
 
 static void app_error_blink();
-
-static void error_handler(void)
-{
-	while(true) {
-		app_error_blink();
-	}
-}
 
 static void log_app_info(void)
 {
@@ -282,34 +273,8 @@ static bool get_bit_state_updated(uint8_t byte, uint8_t bit,
 	return false;
 }
 
-static void app_inited_blink(void)
-{
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_INIT_BLINK_DELAY);
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_INIT_BLINK_DELAY);
-
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_INIT_BLINK_DELAY);
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_INIT_BLINK_DELAY);
-
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_INIT_BLINK_DELAY);
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_INIT_BLINK_DELAY);
-	mdp_sysled_off();
-}
-
 static void app_error_blink(void)
 {
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY);
-	mdp_sysled_toggle();
-	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY);
-
-	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY * 10);
-
 	mdp_sysled_toggle();
 	mdp_tm_msleep(MDP_ERROR_BLINK_DELAY);
 	mdp_sysled_toggle();
@@ -361,7 +326,6 @@ static void mdp_can_transfer(bool replace)
 #endif
 		if (replace || greetin_replace) {
 			mdp_can_replace_data(&pjb_can.msg);
-			mdp_sysled_toggle();
 		}
 
 		memcpy(&dp_can.msg, &pjb_can.msg, sizeof(dp_can.msg));
@@ -435,7 +399,6 @@ void mdp_init(void)
 		app_error_blink();
 	}
 
-	app_inited_blink();
 	return;
 }
 
@@ -445,24 +408,13 @@ void mdp_run(void)
 	char dist_str[MAZDA_DP_CHAR_NUM * 2];
 	struct ptronic_data *data;
 
-#if (MDP_PTRONIC_TEST == 1)
-	const int print_interval = 500; /* msec */
-	static struct mdp_timestamp print_ts;
-	uint8_t ptronic_state = mdp_ptronic_is_enabled() ? 0x02 : 0x00;
-	state_updated = get_bit_state_updated(ptronic_state, MAZDA_STAT_RGEAR_BIT,
-						&rgear_state);
-#else
 	mdp_can_transfer(rgear_state.curr);
 
 	state_updated = get_bit_state_updated(mazda_stat, MAZDA_STAT_RGEAR_BIT,
 					      &rgear_state);
-#endif
 	if (state_updated) {
 		if (rgear_state.curr) {
 			log_sys("Parktronic enabled!\r\n");
-#if (MDP_PTRONIC_TEST == 1)
-			print_ts = MDP_TIMESTAMP;
-#endif
 			mdp_beeper_set_mode(MDP_BEEP_CONST);
 			mdp_beeper_beep();
 
@@ -472,7 +424,6 @@ void mdp_run(void)
 			mdp_beeper_beep();
 		} else {
 			log_sys("Parktronic disabled!\r\n");
-
 			mdp_beeper_set_mode(MDP_BEEP_NONE);
 			mdp_beeper_beep();
 			mdp_tm_msleep(MDP_DISABLE_DELAY);
@@ -480,14 +431,6 @@ void mdp_run(void)
 	}
 
 	if (rgear_state.curr) {
-#if (MDP_PTRONIC_TEST == 1)
-		if (!mdp_ptronic_is_enabled()) {
-			/* Reverse gear detected but parktronic turned off */
-			update_display(MDP_PARK_ERR_STR);
-			log_err("Parktronic signal not detected!\r\n");
-			return;
-		}
-#endif
 		data = ptronic_read_data();
 
 		mdp_beeper_set_mode(distance_to_beep(data));
@@ -495,21 +438,5 @@ void mdp_run(void)
 
 		distance_to_string(data, dist_str);
 		update_display(dist_str);
-#if (MDP_PTRONIC_TEST == 1)
-		if (mdp_tm_elapsed(&print_ts, print_interval)) {
-			for (int i = 0; i < strlen(dist_str); i++) {
-				if (dist_str[i] == '\xF0') {
-					dist_str[i] = '>';
-				} else if (dist_str[i] == '\xF1') {
-					dist_str[i] = '<';
-				} else if (dist_str[i] == '\x3E') {
-					dist_str[i] = '-';
-				} else if (dist_str[i] == '\x3C') {
-					dist_str[i] = '-';
-				}
-			}
-			log_sys("%s\r\n", dist_str);
-		}
-#endif
 	}
 }
