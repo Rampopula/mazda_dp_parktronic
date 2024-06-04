@@ -53,7 +53,6 @@ static uint8_t mdp_buffer[MAZDA_DP_REG_NUM][MAZDA_DP_MSG_SIZE];
 
 #if (MDP_OVERRIDE_GREETING == 1)
 static bool greetin_replace = true;
-static struct mdp_timestamp greetin_ts;
 #else
 static bool greetin_replace;
 #endif
@@ -112,7 +111,7 @@ static void update_display(char *string)
 	 * Due to the fact that the display has only 12 characters to display,
 	 * we need to place data in buffer in a certain way: in left half we
 	 * will write first 7 bytes of our data with offset 1 (service byte);
-	 * in right half we will write next 7 bytes of data, with an data offset
+	 * in right half we will write next 7 bytes of data, with data offset
 	 * not of 7 bytes, but 5.
 	 *
 	 * Example: Write string "Initializing" to the display
@@ -316,12 +315,11 @@ static void mdp_can_transfer(bool replace)
 			mazda_stat = pjb_can.msg.data[MAZDA_STAT_RGEAR_BYTE];
 
 #if (MDP_OVERRIDE_GREETING == 1)
-		if (greetin_replace) {
-			if (mdp_tm_elapsed(&greetin_ts, MDP_HELLO_TIME)) {
-				greetin_replace = false;
-			} else {
+		if (pjb_can.msg.id == MAZDA_DP_MISC_SYMB_ID) {
+			uint8_t data = pjb_can.msg.data[MAZDA_DP_MISC_SYMB2];
+			greetin_replace = !!(data & BIT(MAZDA_DP_MISC_INIT_BIT));
+			if (greetin_replace)
 				update_display(MDP_GREETING_MESSAGE);
-			}
 		}
 #endif
 		if (replace || greetin_replace) {
@@ -362,10 +360,6 @@ static void mdp_can_transfer(bool replace)
 void mdp_init(void)
 {
 	int ret;
-
-#if (MDP_OVERRIDE_GREETING == 1)
-	greetin_ts = MDP_TIMESTAMP;
-#endif
 
 	log_app_info();
 
