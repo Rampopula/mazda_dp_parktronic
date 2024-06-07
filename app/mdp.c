@@ -27,6 +27,7 @@
 
 #define MDP_MAGIC_SLEEP_MS		1	/* Fixes display flickering */
 
+#define MDP_BT_DATA_STR			"  BT Audio  "
 #define MDP_NO_DATA_STR			"    -.-m    "
 #define MDP_DATA_TMPL_STR		"    %u.%um    "
 #define MDP_STEP				30
@@ -306,6 +307,7 @@ static void mdp_can_replace_data(struct mdp_can_msg *msg)
 static void mdp_can_transfer(bool replace)
 {
 	int ret;
+	static int replace_bt;
 
 	pjb_can.msg.size = 0;
 
@@ -313,6 +315,9 @@ static void mdp_can_transfer(bool replace)
 	if (ret == MDP_EOK && pjb_can.msg.size) {
 		if (pjb_can.msg.id == MAZDA_STAT_ID)
 			mazda_stat = pjb_can.msg.data[MAZDA_STAT_RGEAR_BYTE];
+
+		if (pjb_can.msg.id == MAZDA_DP_LHALF_ID)
+			replace_bt = (pjb_can.msg.data[1] == 'E') && (pjb_can.msg.data[2] == 'X');
 
 #if (MDP_OVERRIDE_GREETING == 1)
 		if (pjb_can.msg.id == MAZDA_DP_MISC_SYMB_ID) {
@@ -323,6 +328,9 @@ static void mdp_can_transfer(bool replace)
 		}
 #endif
 		if (replace || greetin_replace) {
+			mdp_can_replace_data(&pjb_can.msg);
+		} else if (replace_bt) {
+			update_display(MDP_BT_DATA_STR);
 			mdp_can_replace_data(&pjb_can.msg);
 		}
 
