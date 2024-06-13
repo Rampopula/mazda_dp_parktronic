@@ -18,7 +18,7 @@
 #include "stm32f1xx_hal.h"
 
 #define __MCU_PTRONIC_DATA_GPIO_PORT	GPIOB
-#define __MCU_PTRONIC_DATA_GPIO_PIN	GPIO_PIN_14	// PARK #2
+#define __MCU_PTRONIC_DATA_GPIO_PIN	GPIO_PIN_12	// PARK #1
 #endif /* STM32F103xB */
 
 /**
