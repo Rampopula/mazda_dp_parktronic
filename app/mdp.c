@@ -362,6 +362,10 @@ static void mdp_can_transfer(bool replace)
 		}
 	} else if (ret != MDP_EOK) {
 		log_err("SPI CAN (Display side) read failed: %s\r\n", strerror(-ret));
+		if (ret == -ENXIO) {
+			log_err("RESET SPI CAN (Display side)!\r\n");
+			mdp_can_start(&dp_can);
+		}
 	}
 }
 
@@ -417,18 +421,10 @@ void mdp_run(void)
 	if (state_updated) {
 		if (rgear_state.curr) {
 			log_sys("Parktronic enabled!\r\n");
-			mdp_beeper_set_mode(MDP_BEEP_CONST);
-			mdp_beeper_beep();
-
-			mdp_tm_msleep(MDP_INIT_BEEP_DELAY);
-
-			mdp_beeper_set_mode(MDP_BEEP_NONE);
-			mdp_beeper_beep();
 		} else {
 			log_sys("Parktronic disabled!\r\n");
 			mdp_beeper_set_mode(MDP_BEEP_NONE);
 			mdp_beeper_beep();
-			mdp_tm_msleep(MDP_DISABLE_DELAY);
 		}
 	}
 

@@ -339,12 +339,13 @@ int mcp2515_init(mcp2515_osc_t osc, mcp2515_speed_t speed)
 	if (osc == MCP2515_FOSC_8MHZ && speed == MCP2515_SPEED_1000KBPS)
 		return -ENOTSUP;
 
-	mcp2515_reset_chip();
 
 	spi_cs_high();
 
 	if (!spi_ready())
 		return -EBUSY;
+
+	mcp2515_reset();
 
 	ret = mcp2515_config_on();
 	if (ret != EOK)
@@ -354,6 +355,8 @@ int mcp2515_init(mcp2515_osc_t osc, mcp2515_speed_t speed)
 				     (uint8_t *)&mcp2515_cnf_conf[osc][speed]);
 	if (ret != EOK)
 		return ret;
+
+	mcp2515_modify_bit(MCP2515_RXB0CTRL, MCP2515_BUKT_MASK, 1);
 
 	ret = mcp2515_config_off();
 	if (ret != EOK)
@@ -549,6 +552,15 @@ int mcp2515_tx_message(mcp2515_tx_buf_t tx_buf, mcp2515_can_msg_t *tx_msg)
 	return ret;
 }
 
+static inline int mcp2515_in_error_state(void)
+{
+	uint8_t eflg = 0x00;
+
+	mcp2515_read_byte(MCP2515_EFLG, &eflg);
+
+	return eflg & 0xF8;
+}
+
 int mcp2515_rx_message(mcp2515_can_msg_t *rx_msg)
 {
 	int ret = EOK;
@@ -556,6 +568,9 @@ int mcp2515_rx_message(mcp2515_can_msg_t *rx_msg)
 		.data = 0
 	};
 	mcp2515_buf_regs_t rx_regs;
+
+	if (mcp2515_in_error_state())
+		return -ENXIO;
 
 	ret = mcp2515_read_rx_status(&rx_status);
 	if (ret != EOK)

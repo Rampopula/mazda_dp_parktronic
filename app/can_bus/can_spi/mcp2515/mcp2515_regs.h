@@ -85,4 +85,6 @@
 #define MCP2515_RXB1CTRL	0x70
 #define MCP2515_RXB1SIDH	0x71
 
+#define MCP2515_BUKT_MASK	0x04
+
 #endif /* __MDP_MCP2515_REGS_H__ */
